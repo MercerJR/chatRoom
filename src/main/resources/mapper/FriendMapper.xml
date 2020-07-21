@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.train.chat.dao.FriendMapper">
+    <resultMap id="BaseResultMap" type="com.train.chat.pojo.Friend">
+        <!--@mbg.generated-->
+        <!--@Table friend-->
+        <result column="user1" jdbcType="VARCHAR" property="user1"/>
+        <result column="user2" jdbcType="VARCHAR" property="user2"/>
+        <result column="tag" jdbcType="INTEGER" property="tag"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.train.chat.pojo.Friend">
+        <!--@mbg.generated-->
+        insert into friend (user1, user2, tag
+        )
+        values (#{user1,jdbcType=VARCHAR}, #{user2,jdbcType=VARCHAR}, #{tag,jdbcType=INTEGER}
+        )
+    </insert>
+    <insert id="insertSelective" parameterType="com.train.chat.pojo.Friend">
+        <!--@mbg.generated-->
+        insert into friend
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="user1 != null">
+                user1,
+            </if>
+            <if test="user2 != null">
+                user2,
+            </if>
+            <if test="tag != null">
+                tag,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="user1 != null">
+                #{user1,jdbcType=VARCHAR},
+            </if>
+            <if test="user2 != null">
+                #{user2,jdbcType=VARCHAR},
+            </if>
+            <if test="tag != null">
+                #{tag,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="isFriend" resultMap="BaseResultMap">
+        select * from friend
+        where user1 = #{user1} and user2 = #{user2}
+        limit 1
+    </select>
+
+    <update id="updateTag">
+        update friend set tag = 2
+        where user1 = #{user1} and user2 = #{user2};
+    </update>
+
+    <delete id="deleteTag">
+        delete from friend
+        where user1 = #{user1} and user2 = #{user2}
+    </delete>
+
+    <select id="selectFriendsByUser" resultType="com.train.chat.pojo.User">
+        select * from user u,friend f
+        where u.user_id = f.user2
+        and f.user1 = #{userId}
+    </select>
+</mapper>

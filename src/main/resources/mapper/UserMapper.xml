@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.train.chat.dao.UserMapper">
+    <resultMap id="BaseResultMap" type="com.train.chat.pojo.User">
+        <!--@mbg.generated-->
+        <!--@Table user-->
+        <id column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        user_id, username, `password`
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        <!--@mbg.generated-->
+        select
+        <include refid="Base_Column_List"/>
+        from user
+        where user_id = #{userId,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+        <!--@mbg.generated-->
+        delete from user
+        where user_id = #{userId,jdbcType=VARCHAR}
+    </delete>
+    <insert id="insert" parameterType="com.train.chat.pojo.User">
+        <!--@mbg.generated-->
+        insert into user (user_id, username, `password`
+        )
+        values (#{userId,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}
+        )
+    </insert>
+    <insert id="insertSelective" parameterType="com.train.chat.pojo.User">
+        <!--@mbg.generated-->
+        insert into user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="username != null">
+                username,
+            </if>
+            <if test="password != null">
+                `password`,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="username != null">
+                #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                #{password,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.train.chat.pojo.User">
+        <!--@mbg.generated-->
+        update user
+        <set>
+            <if test="username != null">
+                username = #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                `password` = #{password,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where user_id = #{userId,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.train.chat.pojo.User">
+        <!--@mbg.generated-->
+        update user
+        set username = #{username,jdbcType=VARCHAR},
+        `password` = #{password,jdbcType=VARCHAR}
+        where user_id = #{userId,jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectByNameAndPass" resultMap="BaseResultMap">
+        select * from user
+        where username = #{username} and password = #{password}
+    </select>
+
+    <select id="selectUserByInfo" resultMap="BaseResultMap">
+        select * from user
+        where username like CONCAT(CONCAT('%', #{userInfo}), '%')
+        or user_id like CONCAT(CONCAT('%', #{userInfo}), '%')
+    </select>
+
+    <select id="selectUsernameById" resultType="java.lang.String">
+        select username from user where user_id = #{userId}
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        select * from user where username = #{username}
+    </select>
+
+
+</mapper>

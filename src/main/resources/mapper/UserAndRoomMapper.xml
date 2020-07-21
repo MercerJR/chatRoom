@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.train.chat.dao.UserAndRoomMapper">
+    <resultMap id="BaseResultMap" type="com.train.chat.pojo.UserAndRoom">
+        <!--@mbg.generated-->
+        <!--@Table user_and_room-->
+        <result column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="room_id" jdbcType="VARCHAR" property="roomId"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.train.chat.pojo.UserAndRoom">
+        <!--@mbg.generated-->
+        insert into user_and_room (user_id, room_id)
+        values (#{userId,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertSelective" parameterType="com.train.chat.pojo.UserAndRoom">
+        <!--@mbg.generated-->
+        insert into user_and_room
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="roomId != null">
+                room_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">
+                #{userId,jdbcType=VARCHAR},
+            </if>
+            <if test="roomId != null">
+                #{roomId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="selectUserByRoom" resultType="com.train.chat.pojo.User">
+        select * from user where user_id in (
+          select user_id from user_and_room
+          where room_id = #{roomId}
+        )
+    </select>
+
+    <select id="selectRecord" resultMap="BaseResultMap">
+        select * from user_and_room
+        where user_id = #{userId} and room_id = #{roomId}
+    </select>
+
+    <select id="selectRoomIdByUser" resultType="java.lang.String">
+        select room_id from user_and_room
+        where user_id = #{userId}
+    </select>
+
+</mapper>
