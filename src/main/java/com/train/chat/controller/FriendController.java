@@ -37,7 +37,7 @@ public class FriendController {
     @PostMapping(value = "/agreeApply",produces = "application/json")
     public Response agreeApply(@RequestBody ApplyMessage applyMessage, HttpSession session){
         User user = (User) session.getAttribute("user");
-        service.agreeApply(user.getUserId(),applyMessage);
+        service.agreeApply(user,applyMessage);
         return new Response().success();
     }
 

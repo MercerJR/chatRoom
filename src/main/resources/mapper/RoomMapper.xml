@@ -72,7 +72,7 @@
     <select id="selectRoomByUser" resultMap="BaseResultMap">
         select * from room r, user_and_room ur
         where r.room_id = ur.room_id
-        and ur.user_id = #{userId};
+        and ur.user_id = #{userId}
     </select>
 
     <select id="selectRoomByInfo" resultMap="BaseResultMap">

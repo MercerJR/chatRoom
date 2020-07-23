@@ -2,13 +2,14 @@ package com.train.chat.service;
 
 import com.train.chat.dao.RoomMapper;
 import com.train.chat.dao.UserAndRoomMapper;
+import com.train.chat.data.HttpInfo;
 import com.train.chat.pojo.Room;
 import com.train.chat.pojo.User;
 import com.train.chat.pojo.UserAndRoom;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,30 +25,70 @@ public class RoomService {
     @Autowired
     private RoomMapper roomMapper;
 
-    public void createRoom(String userId, String roomId,String roomName) {
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    public void createRoom(User user, String roomId, String roomName) {
         Room room = new Room(roomId,roomName);
-        UserAndRoom userAndRoom = new UserAndRoom(userId,roomId);
+        UserAndRoom userAndRoom = new UserAndRoom(user.getUserId(),roomId);
         roomMapper.insert(room);
         mapper.insert(userAndRoom);
+        String roomsKey = user.getUserId() + ":" + HttpInfo.REDIS_ROOMS_SUFFIX;
+        String membersKey = roomId + ":" + HttpInfo.REDIS_MEMBERS_SUFFIX;
+        redisTemplate.opsForList().rightPush(roomsKey,room);
+        redisTemplate.opsForList().rightPush(membersKey,user);
     }
 
-    public void joinExistRoom(String userId,String roomId){
-        if (mapper.selectRecord(userId,roomId) == null){
-            UserAndRoom userAndRoom = new UserAndRoom(userId,roomId);
+    public void joinExistRoom(User user,Room room){
+        if (mapper.selectRecord(user.getUserId(),room.getRoomId()) == null){
+            UserAndRoom userAndRoom = new UserAndRoom(user.getUserId(),room.getRoomId());
             mapper.insert(userAndRoom);
+            String roomsKey = user.getUserId() + ":" + HttpInfo.REDIS_ROOMS_SUFFIX;
+            String membersKey = room.getRoomId() + ":" + HttpInfo.REDIS_MEMBERS_SUFFIX;
+            redisTemplate.opsForList().rightPush(roomsKey,room);
+            redisTemplate.opsForList().rightPush(membersKey,user);
         }
+    }
+
+    public void exitRoom(User user,String roomId){
+        Room room = roomMapper.selectByPrimaryKey(roomId);
+        mapper.deleteRecord(user.getUserId(),roomId);
+        String membersKey = roomId + ":" + HttpInfo.REDIS_MEMBERS_SUFFIX;
+        String roomsKey = user.getUserId() + ":" + HttpInfo.REDIS_ROOMS_SUFFIX;
+        redisTemplate.opsForList().remove(membersKey,0,user);
+        redisTemplate.opsForList().remove(roomsKey,0,room);
     }
 
     public boolean existRoom(String room) {
         return roomMapper.existRoom(room) != null;
     }
 
-    public List<Room> displayRoomList(String userId) {
-        return roomMapper.selectRoomByUser(userId);
+    public List displayRoomList(String userId) {
+        String roomsKey = userId + ":" + HttpInfo.REDIS_ROOMS_SUFFIX;
+        List<Object> roomList = redisTemplate.opsForList().range(roomsKey,0,-1);
+        if (roomList != null && roomList.size() != 0){
+            return roomList;
+        }else {
+            List rooms = roomMapper.selectRoomByUser(userId);
+            if (rooms != null && rooms.size() != 0){
+                redisTemplate.opsForList().rightPushAll(roomsKey,rooms);
+            }
+            return rooms;
+        }
     }
 
-    public List<User> displayUserList(String roomId) {
-        return mapper.selectUserByRoom(roomId);
+    public List displayUserList(String roomId) {
+        String membersKey = roomId + ":" + HttpInfo.REDIS_MEMBERS_SUFFIX;
+        List<Object> memberList = redisTemplate.opsForList().range(membersKey,0,-1);
+        if (memberList != null && memberList.size() != 0){
+            return memberList;
+        }else {
+            List members = mapper.selectUserByRoom(roomId);
+            if (members != null && members.size() != 0){
+                redisTemplate.opsForList().rightPushAll(membersKey,members);
+            }
+            return members;
+        }
     }
 
     public List<Room> selectRoomByInfo(String roomInfo) {

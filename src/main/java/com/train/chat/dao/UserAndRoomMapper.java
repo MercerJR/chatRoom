@@ -20,4 +20,6 @@ public interface UserAndRoomMapper {
     UserAndRoom selectRecord(@Param("userId") String userId, @Param("roomId") String roomId);
 
     List<String> selectRoomIdByUser(String userId);
+
+    void deleteRecord(@Param("userId") String userId, @Param("roomId") String roomId);
 }

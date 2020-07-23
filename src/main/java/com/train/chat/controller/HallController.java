@@ -63,6 +63,11 @@ public class HallController {
         }
     }
 
+    static void exitRoom(String roomId, User user) {
+        Session session = sessions.get(user.getUserId());
+        rooms.get(roomId).remove(session);
+    }
+
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) throws IOException {
         HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
@@ -118,11 +123,12 @@ public class HallController {
 
     @OnClose
     public void onClose() {
-        String username = users.get(session).getUsername();
+        User user = users.get(session);
         users.remove(session);
+        sessions.remove(user.getUserId());
         subOnlineNum();
         if (onlineNum > 0) {
-            broadCast(InputMessage.leaveInfo(username, onlineNum));
+//            broadCast(InputMessage.leaveInfo(username, onlineNum));
             showList();
         }
     }

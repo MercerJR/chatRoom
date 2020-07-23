@@ -44,15 +44,21 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
-            <h2 style="margin-top: 2rem">已加入的房间列表</h2>
-            <div class="list-group">
+        <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12" id="groupList">
+            <h4 style="margin-top: 2rem">已加入的群聊列表</h4>
+            <div class="list-group" id="roomListBoard">
+
             </div>
+            <h4 style="margin-top: 2rem">好友列表</h4>
+            <div class="list-group" id="friendListBoard">
+
+            </div>
+
         </div>
         <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12" id="center">
 
             <div class="input-group mb-3" style="margin-bottom: 2rem;margin-top: 2rem;">
-                <input type="text" id="createRoom" class="form-control" placeholder="输入您要创建的房间名称"
+                <input type="text" id="createRoom" class="form-control" placeholder="输入您要创建的群聊名称"
                        aria-label="Recipient's username" aria-describedby="basic-addon2">
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="button"
@@ -76,7 +82,7 @@
 
                 <button type="button" class="btn btn-warning" style="margin-top: 1rem" onclick="send()" id="pub">发布
                 </button>
-                <button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="closeWS()" id="out">退出
+                <button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="exitRoom(rooms[tag])" id="out">退出群聊
                 </button>
             </div>
         </div>
@@ -98,7 +104,7 @@
 
     var webSocket;
     chatMessage = [];
-    rooms = [];
+    var rooms = [];
     users = [];
     var rightTemp;
     var tag = 0;
@@ -261,9 +267,9 @@
             document.getElementsByClassName("lead")[0].innerHTML = chatMessage[tag];
         }
         if (users[tag] == null) {
-            document.getElementsByClassName("list-group")[1].innerHTML = "";
+            document.getElementById("userList").innerHTML = "";
         } else {
-            document.getElementsByClassName("list-group")[1].innerHTML = users[tag];
+            document.getElementById("userList").innerHTML = users[tag];
         }
         alert("你已进入 " + roomName);
         rightTag = 0;
@@ -338,8 +344,8 @@
                 alert("连接已关闭");
                 webSocket = null;
                 document.getElementsByClassName("lead")[0].innerHTML = "";
-                document.getElementsByClassName("list-group")[0].innerHTML = "";
-                document.getElementsByClassName("list-group")[1].innerHTML = "";
+                document.getElementById("groupList").innerHTML = "";
+                document.getElementById("userListBoard").innerHTML = "";
             };
         } else {
             // 浏览器不支持 WebSocket
@@ -404,7 +410,6 @@
             success: function (res) {  //请求成功的回调
                 if (res.code === 200) {
                     alert("您已注销");
-                    window.location.herf = '/';
                 } else {
                     alert(res.message)
                 }
@@ -458,9 +463,11 @@
 
     function joinExistRoom(room) {
         var roomId = room.split("(")[1].split(")")[0];
+        var roomName = room.split("(")[0];
+        var roomObj = {"roomId": roomId,"roomName": roomName};
         $.ajax({
             url: "/room/joinExistRoom",
-            data: roomId,
+            data: JSON.stringify(roomObj),
             type: "POST",
             dataType: "json",//返回值类型 JSON
             contentType: 'application/json',
@@ -468,6 +475,26 @@
                 if (res.code === 200) {
                     displayRoomList();
                     enterRoom(room);
+                } else {
+                    alert(res.message)
+                }
+            },
+            error: function (res) { //请求失败的回调
+                alert(res.result)
+            }
+        })
+    }
+
+    function exitRoom(roomId) {
+        $.ajax({
+            url: "/room/exitRoom",
+            data: roomId,
+            type: "POST",
+            dataType: "json",//返回值类型 JSON
+            contentType: 'application/json',
+            success: function (res) {  //请求成功的回调
+                if (res.code === 200) {
+                    displayRoomList();
                 } else {
                     alert(res.message)
                 }
@@ -488,7 +515,8 @@
             contentType: 'application/json',
             success: function (res) {  //请求成功的回调
                 if (res.code === 200) {
-                    alert("好友添加成功")
+                    alert("好友添加成功");
+                    displayFriends()
                 } else {
                     alert(res.message)
                 }
@@ -613,6 +641,7 @@
         };
     }
 
+    var roomlength;
     function displayRoomList() {
         var req = new XMLHttpRequest();
         //设置请求方法 主机地址，是否异步
@@ -623,17 +652,19 @@
             if (req.readyState == 4 && req.status == 200) {
                 rooms = [];
                 rooms[0] = "大厅";
-                var listBoard = document.getElementsByClassName("list-group")[0];
-                listBoard.innerHTML = '<li class="list-group-item list-group-item-action" onclick="enterRoom(this.innerHTML)">' +
+                var listBoard = "";
+                listBoard += '<li class="list-group-item list-group-item-action" onclick="enterRoom(this.innerHTML)">' +
                     '大厅' + '</li>';
                 var content = JSON.parse(req.responseText);
                 for (var i = 0; i < content.data.size; i++) {
                     var roomName = content.data.roomList[i].roomName;
                     var roomId = content.data.roomList[i].roomId;
                     rooms[rooms.length] = roomId;
-                    listBoard.innerHTML += '<li class="list-group-item list-group-item-action" onclick="enterRoom(this.innerHTML)">' +
+                    listBoard += '<li class="list-group-item list-group-item-action" onclick="enterRoom(this.innerHTML)">' +
                         roomName + '(' + roomId + ')' + '</li>'
                 }
+                document.getElementById("roomListBoard").innerHTML = listBoard;
+                roomlength = content.data.size;
                 displayFriends();
             }
         }
@@ -646,15 +677,15 @@
         req.send();
         req.onreadystatechange = function () {
             if (req.readyState == 4 && req.status == 200) {
-                var board = document.getElementsByClassName("list-group")[0];
-                var n = rooms.length;
+                var board = "";
                 var content = JSON.parse(req.responseText).data;
                 for (var i = 0; i < content.size; i++) {
                     var username = content.userList[i].username;
                     var userId = content.userList[i].userId;
-                    board.innerHTML += '<li class="list-group-item list-group-item-action" onclick="chatWithUser(this.innerHTML)">' +
+                    board += '<li class="list-group-item list-group-item-action" onclick="chatWithUser(this.innerHTML)">' +
                         username + '(' + userId + ')' + '</li>';
-                    rooms[rooms.length] = userId;
+                    rooms[roomlength + i] = userId;
+                    document.getElementById("friendListBoard").innerHTML = board;
                 }
             }
         }

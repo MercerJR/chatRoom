@@ -42,7 +42,7 @@ public class RoomController {
     public Response joinRoom(@RequestBody String roomName, HttpSession session) {
         User user = (User) session.getAttribute("user");
         String roomId = "R" + idUtil.getPrimaryKey();
-        service.createRoom(user.getUserId(), roomId, roomName);
+        service.createRoom(user, roomId, roomName);
         HallController.putRooms(roomId, user);
         return new Response().success();
     }
@@ -54,9 +54,17 @@ public class RoomController {
     }
 
     @PostMapping(value = "/joinExistRoom",produces = "application/json")
-    public Response joinExistRoom(@RequestBody String roomId,HttpSession session){
+    public Response joinExistRoom(@RequestBody Room room,HttpSession session){
         User user = (User) session.getAttribute("user");
-        service.joinExistRoom(user.getUserId(),roomId);
+        service.joinExistRoom(user,room);
+        return new Response().success();
+    }
+
+    @PostMapping(value = "/exitRoom",produces = "application/json")
+    public Response exitRoom(@RequestBody String roomId,HttpSession session){
+        User user = (User) session.getAttribute("user");
+        service.exitRoom(user,roomId);
+        HallController.exitRoom(roomId,user);
         return new Response().success();
     }
 

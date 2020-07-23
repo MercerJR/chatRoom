@@ -50,4 +50,9 @@
         where user_id = #{userId}
     </select>
 
+    <delete id="deleteRecord">
+        delete from user_and_room
+        where user_id = #{userId} and room_id = #{roomId}
+    </delete>
+
 </mapper>

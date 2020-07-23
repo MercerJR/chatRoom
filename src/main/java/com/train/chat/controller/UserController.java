@@ -65,6 +65,7 @@ public class UserController {
     public Response cancellation(HttpSession session) {
         if (session != null) {
             session.invalidate();
+
         }
         return new Response().success();
     }
