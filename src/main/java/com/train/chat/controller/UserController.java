@@ -1,5 +1,6 @@
 package com.train.chat.controller;
 
+import com.train.chat.data.HttpInfo;
 import com.train.chat.data.Message;
 import com.train.chat.data.Response;
 import com.train.chat.data.UserListResponse;
@@ -54,7 +55,7 @@ public class UserController {
         }
         User loginUser = service.login(user.getUsername(), user.getPassword());
         if (loginUser != null) {
-            session.setAttribute("user", loginUser);
+            session.setAttribute(HttpInfo.USER_SESSION, loginUser);
             return new Response().success(loginUser.getUserId());
         } else {
             throw new CustomException(CustomExceptionType.VALIDATE_ERROR, Message.NAME_PASS_ERROR);
@@ -64,8 +65,9 @@ public class UserController {
     @PostMapping(value = "/cancellation", produces = "application/json")
     public Response cancellation(HttpSession session) {
         if (session != null) {
+            User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
             session.invalidate();
-
+            HallController.cancellation(user);
         }
         return new Response().success();
     }
@@ -78,15 +80,15 @@ public class UserController {
 
     @PutMapping(value = "/updateInfo",produces = "application/json")
     public Response updateInfo(@RequestBody UserInfo userInfo,HttpSession session){
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         userInfo.setUserId(user.getUserId());
-        service.updateUserInfo(userInfo,user.getUsername());
+        service.updateUserInfo(userInfo,user.getUsername(),session);
         return new Response().success();
     }
 
     @GetMapping(value = "/displayUserInfo",produces = "application/json")
     public Response displayUserInfo(HttpSession session){
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         UserInfo userInfo = service.displayUserInfo(user.getUserId());
         return new Response().success(userInfo);
     }

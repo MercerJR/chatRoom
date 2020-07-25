@@ -2,6 +2,7 @@ package com.train.chat.service;
 
 import com.train.chat.dao.UserInfoMapper;
 import com.train.chat.dao.UserMapper;
+import com.train.chat.data.HttpInfo;
 import com.train.chat.data.Message;
 import com.train.chat.exception.CustomException;
 import com.train.chat.exception.CustomExceptionType;
@@ -10,6 +11,7 @@ import com.train.chat.pojo.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -44,10 +46,18 @@ public class UserService {
         return mapper.selectUserByInfo(userInfo);
     }
 
-    public void updateUserInfo(UserInfo userInfo,String oldName){
-        User user = mapper.selectByUsername(userInfo.getUsername());
-        if (userInfo.getUsername() != null && user != null && !user.getUsername().equals(oldName)){
-            throw new CustomException(CustomExceptionType.VALIDATE_ERROR,Message.USERNAME_BE_USED);
+    public void updateUserInfo(UserInfo userInfo, String oldName,HttpSession session){
+        if (userInfo.getUsername() != null){
+            User user = mapper.selectByUsername(userInfo.getUsername());
+            if (user != null && !user.getUsername().equals(oldName)){
+                throw new CustomException(CustomExceptionType.VALIDATE_ERROR,Message.USERNAME_BE_USED);
+            }
+            if (!mapper.updateUsernameById(userInfo.getUsername(),userInfo.getUserId())){
+                throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
+            }
+            User sessionUser = (User) session.getAttribute(HttpInfo.USER_SESSION);
+            sessionUser.setUsername(userInfo.getUsername());
+            session.setAttribute(HttpInfo.USER_SESSION,sessionUser);
         }
         if (!infoMapper.updateByPrimaryKeySelective(userInfo)){
             throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);

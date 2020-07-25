@@ -96,6 +96,10 @@
     <select id="selectByUsername" resultMap="BaseResultMap">
         select * from user where username = #{username}
     </select>
+    <update id="updateUsernameById">
+        update user set username = #{username}
+        where user_id = #{userId}
+    </update>
 
 
 </mapper>

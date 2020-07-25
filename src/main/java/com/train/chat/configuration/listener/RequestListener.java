@@ -1,4 +1,4 @@
-package com.train.chat.configuration;
+package com.train.chat.configuration.listener;
 
 import org.springframework.stereotype.Component;
 

@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
 public class ThymeleafServer {
     @GetMapping("/")
     public ModelAndView login() {
-        return new ModelAndView("/login");
+        return new ModelAndView("login");
     }
 
     @GetMapping("/index")
@@ -25,7 +25,7 @@ public class ThymeleafServer {
         if (StringUtils.isEmpty(username)) {
             username = "匿名用户";
         }
-        ModelAndView mav = new ModelAndView("/chat");
+        ModelAndView mav = new ModelAndView("chat");
         mav.addObject("user", username);
 //        mav.addObject("webSocketUrl", "ws://" + InetAddress.getLocalHost().getHostAddress() + ":" + request.getServerPort() + request.getContextPath() + "/hall");
         return mav;

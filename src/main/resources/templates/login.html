@@ -180,10 +180,15 @@
      * 注册
      */
     function sign() {
-        var params = {
-            "username": $("#username").val(), //取出文本中的值
-            "password": $("#password").val()
+        var username = $("#username").val();
+        if (username.length > 15){
+            alert("用户名不要输入超过15个字符");
+            return;
         }
+        var params = {
+            "username": username, //取出文本中的值
+            "password": $("#password").val()
+        };
         $.ajax({
             url: "/user/register",
             data: JSON.stringify(params),

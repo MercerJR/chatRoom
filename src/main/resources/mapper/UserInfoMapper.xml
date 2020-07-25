@@ -91,22 +91,22 @@
     <!--@mbg.generated-->
     update user_info
     <set>
-      <if test="username != null">
+      <if test="username != null or username != ''">
         username = #{username,jdbcType=VARCHAR},
       </if>
-      <if test="gender != null">
+      <if test="gender != null or gender != ''">
         gender = #{gender,jdbcType=VARCHAR},
       </if>
       <if test="age != null">
         age = #{age,jdbcType=INTEGER},
       </if>
-      <if test="hobby != null">
+      <if test="hobby != null or hobby != ''">
         hobby = #{hobby,jdbcType=VARCHAR},
       </if>
-      <if test="hometown != null">
+      <if test="hometown != null or hometown != ''">
         hometown = #{hometown,jdbcType=VARCHAR},
       </if>
-      <if test="describe != null">
+      <if test="describe != null or describe != ''">
         `describe` = #{describe,jdbcType=LONGVARCHAR},
       </if>
     </set>

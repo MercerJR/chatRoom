@@ -29,9 +29,13 @@ spring:
       shutdown-timeout: 100
 
   thymeleaf:
+    enabled: true
+    check-template-location: true
+    encoding: UTF-8
+    excluded-view-names:
     prefix: classpath:/templates/
     suffix: .html
-    mode: HTML
+    mode: HTML5
 
 #  mvc:
 #    view:

@@ -30,7 +30,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-item nav-link active" href="#">群聊<span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link" href="#" onclick="backToChat()">群聊</a>
             <a class="nav-item nav-link" href="#" onclick="select()">搜索</a>
             <a class="nav-item nav-link" href="#" onclick="updateUserInfo()">个人信息</a>
             <a class="nav-item nav-link" href="#" onclick="displayMessage()">通知消息</a>
@@ -82,7 +82,7 @@
 
                 <button type="button" class="btn btn-warning" style="margin-top: 1rem" onclick="send()" id="pub">发布
                 </button>
-                <button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="exitRoom(rooms[tag])" id="out">退出群聊
+                <button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="exitRoom(currentRoomId)" id="out">退出群聊
                 </button>
             </div>
         </div>
@@ -107,15 +107,19 @@
     var rooms = [];
     users = [];
     var rightTemp;
-    var tag = 0;
+    // var tag = 0;
     var centerTag = 0;
     centerBoard = [];
     var rightTag = 0;
     rightBoard = [];
     var currentSelectUserId;
+    var currentUserInfo;
 
-    function showUserInfo(user) {
-        rightBoard[rightTag] = users;
+    let chatMsgMap = new Map();
+    let userListMap = new Map();
+
+    function showUserInfo(user,type) {
+        rightBoard[rightTag] = document.getElementById("userListBoard").innerHTML;
         rightTemp = document.getElementById("userListBoard").innerHTML;
         var userId = user.split("(")[1].split(")")[0];
         currentSelectUserId = userId;
@@ -139,7 +143,9 @@
                 infoDisplay += '<li class="list-group-item">' + '个人描述：' + userInfo.describe + '</li>';
                 infoDisplay += '</ul>';
                 infoDisplay += '</div>';
-                infoDisplay += '<button type="button" class="btn btn-info" style="margin-top: 1rem" onclick="back()">返回</button>';
+                if (type === 0){
+                    infoDisplay += '<button type="button" class="btn btn-info" style="margin-top: 1rem" onclick="back()">返回</button>';
+                }
                 if (currentUserId !== currentSelectUserId) {
                     infoDisplay += '<button type="button" class="btn btn-success" style="margin-top: 1rem" onclick="addFriend()">加好友</button>';
                 }
@@ -147,6 +153,24 @@
                 rightTag = 1;
             }
         };
+    }
+
+    function backToChat() {
+        if (centerTag !== 0) {
+            centerBoard[centerTag] = document.getElementById("center").innerHTML;
+            document.getElementById("center").innerHTML = centerBoard[0];
+            centerTag = 0;
+        }
+        if (rightTag !== 0){
+            rightBoard[rightTag] = document.getElementById("userListBoard").innerHTML;
+            document.getElementById("userListBoard").innerHTML = rightTemp;
+            rightTag = 0;
+        }
+        if (chatMsgMap.get(currentRoomId) == null) {
+            document.getElementsByClassName("lead")[0].innerHTML = "";
+        } else {
+            document.getElementsByClassName("lead")[0].innerHTML = chatMsgMap.get(currentRoomId);
+        }
     }
 
     function back() {
@@ -163,6 +187,7 @@
             //console.log(req.readyState + " " + req.status);
             if (req.readyState == 4 && req.status == 200) {
                 var userInfo = JSON.parse(req.responseText).data;
+                currentUserInfo = userInfo;
                 centerBoard[centerTag] = document.getElementById("center").innerHTML;
                 var infoBoard = '<h4 style="margin-top: 2rem">个人信息</h4>';
                 infoBoard += '<div class="form-group">\n' +
@@ -189,7 +214,8 @@
                     '    <label >个人描述</label>\n' +
                     '    <input type="text" placeholder="' + userInfo.describe + '" class="form-control" id="inputDescribe">\n' +
                     '  </div>';
-                infoBoard += '<button type="submit" class="btn btn-primary" onclick="updateInfo()">提交修改</button>';
+                infoBoard += '<button type="submit" class="btn btn-primary" onclick="' +
+                    'updateInfo()">提交修改</button>';
                 document.getElementById("center").innerHTML = infoBoard;
                 centerTag = 2
             }
@@ -230,14 +256,14 @@
         }
         var username = user.split("(")[0];
         var userId = user.split("(")[1].split(")")[0];
-        tag = rooms.indexOf(userId);
-        if (chatMessage[tag] == null) {
+        if (chatMsgMap.get(userId) == null) {
             document.getElementsByClassName("lead")[0].innerHTML = "";
         } else {
-            document.getElementsByClassName("lead")[0].innerHTML = chatMessage[tag];
+            document.getElementsByClassName("lead")[0].innerHTML = chatMsgMap.get(userId);
         }
         alert("你已与 " + username + " 开始聊天");
-        showUserInfo(user);
+        currentRoomId = userId;
+        showUserInfo(user,1);
     }
 
     function enterRoom(room) {
@@ -246,35 +272,43 @@
             document.getElementById("center").innerHTML = centerBoard[0];
             centerTag = 0;
         }
-        // if (rightTag !== 0){
-        //     rightBoard[rightTag] = document.getElementById("userListBoard").innerHTML;
-        //     document.getElementById("userListBoard").innerHTML = rightBoard[0];
-        // }
+        if (rightTag !== 0){
+            // rightBoard[rightTag] = document.getElementById("userListBoard").innerHTML;
+            document.getElementById("userListBoard").innerHTML = rightBoard[0];
+            rightTag = 0;
+        }
         var roomName;
+        var roomId;
         if (room === "大厅") {
-            tag = 0;
             roomName = "大厅";
+            roomId = "大厅";
         } else {
             roomName = room.split("(")[0];
-            var roomId = room.split("(")[1].split(")")[0];
+            roomId = room.split("(")[1].split(")")[0];
             var roomObj = {"roomId": roomId, "roomName": roomName};
             joinRoom(roomObj);
-            tag = rooms.indexOf(roomId);
+            // document.getElementById(users[tag]);
         }
-        if (chatMessage[tag] == null) {
+        if (chatMsgMap.get(roomId) == null) {
             document.getElementsByClassName("lead")[0].innerHTML = "";
         } else {
-            document.getElementsByClassName("lead")[0].innerHTML = chatMessage[tag];
+            document.getElementsByClassName("lead")[0].innerHTML = chatMsgMap.get(roomId);
         }
-        if (users[tag] == null) {
-            document.getElementById("userList").innerHTML = "";
-        } else {
-            document.getElementById("userList").innerHTML = users[tag];
-        }
+        // if (userListMap.get(roomId) == null) {
+        //     document.getElementById("userListBoard").innerHTML = "";
+        // } else {
+        //     document.getElementById("userList").innerHTML = users[tag];
+        // }
         alert("你已进入 " + roomName);
+        currentRoomId = roomId;
         rightTag = 0;
-        displayUserList();
+        displayUserList(roomId);
     }
+
+    document.onkeydown = function (event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        e.keyCode === 13 && send();
+    };
 
     function send() {
         if (webSocket != null) {
@@ -282,7 +316,7 @@
             if (input_msg == "") {
                 return;
             }
-            var message = {"target": rooms[tag], "message": input_msg, "type": 0};
+            var message = {"target": currentRoomId, "message": input_msg, "type": 0};
             var json = JSON.stringify(message);
             webSocket.send(json);
             // 清除input框里的信息
@@ -296,6 +330,7 @@
         webSocket.close();
     }
 
+    var currentRoomId = "大厅";
     function initWebSocket() {
         if ("WebSocket" in window) {
             if (webSocket == null) {
@@ -313,16 +348,17 @@
             webSocket.onmessage = function (evt) {
                 var msgObj = JSON.parse(evt.data);
                 if (msgObj.type === 0) {
-                    var roomTag = rooms.indexOf(msgObj.target);
+                    var roomId = msgObj.target;
                     var newMessage = msgObj.message;
-                    var oldMessage = chatMessage[roomTag];
+                    var oldMessage = chatMsgMap.get(roomId);
                     if (oldMessage == null) {
                         oldMessage = "";
                     }
-                    chatMessage[roomTag] = oldMessage + newMessage + "<br>";
-                    chatMessage[roomTag].scrollTop = chatMessage[roomTag].scrollTop + 40;
-                    if (roomTag === tag){
-                        document.getElementsByClassName("lead")[0].innerHTML = chatMessage[roomTag];
+                    var chatMessage = oldMessage + newMessage + "<br>";
+                    chatMessage.scrollTop = chatMessage.scrollTop + 40;
+                    chatMsgMap.set(roomId,chatMessage);
+                    if (roomId === currentRoomId){
+                        document.getElementsByClassName("lead")[0].innerHTML = chatMessage;
                     }
                 } else {
                     var userListBoard = '<h4 style="margin-top: 2rem">在线列表</h4>';
@@ -330,12 +366,12 @@
                     for (var i = 0; i < msgObj.listNum; i++) {
                         var username = msgObj.list[i].username;
                         var userId = msgObj.list[i].userId;
-                        userListBoard += '<li class="list-group-item list-group-item-action" onclick="showUserInfo(this.innerHTML)">' +
+                        userListBoard += '<li class="list-group-item list-group-item-action" onclick="showUserInfo(this.innerHTML,0)">' +
                             username + '(' + userId + ')' + '</li>'
                     }
                     userListBoard += '</ul>';
-                    users[tag] = userListBoard;
-                    document.getElementById("userListBoard").innerHTML = users[tag];
+                    userListMap.set(currentRoomId,userListBoard);
+                    document.getElementById("userListBoard").innerHTML = userListBoard;
                 }
             };
 
@@ -374,13 +410,58 @@
     }
 
     function updateInfo() {
+        var inputUsername = $("#inputUsername").val();
+        var inputGender = $("#inputGender").val();
+        var inputHobby = $("#inputHobby").val();
+        var inputHometown = $("#inputHometown").val();
+        var inputDescribe = $("#inputDescribe").val();
+        var inputAge = $("#inputAge").val();
+        if (inputUsername.length > 15){
+            alert("用户名不能输入超过15个字符");
+            return;
+        }
+        if (inputGender.length > 4){
+            alert("性别建议输入男或女，不要输入过多其他字符")
+            return;
+        }
+        if (inputHobby.length > 50){
+            alert("爱好不要输入超过50个字符");
+            return;
+        }
+        if (inputHometown.length > 50){
+            alert("家乡不要输入超过50个字符");
+            return;
+        }
+        if (inputDescribe.length > 50){
+            alert("个人描述不要输入超过50个字符");
+            return;
+        }
+        if (inputAge.length > 3){
+            alert("请不要输入超过3个数字");
+            return;
+        }
+        if (inputUsername === ""){
+            inputUsername = currentUserInfo.username;
+        }
+        if (inputGender === ""){
+            inputGender = currentUserInfo.gender;
+        }
+        if (inputHobby === ""){
+            inputHobby = currentUserInfo.hobby;
+        }
+        if (inputHometown === ""){
+            inputHometown = currentUserInfo.hometown;
+        }
+        if (inputDescribe === ""){
+            inputDescribe = currentUserInfo.describe;
+        }
         var params = {
-            "username": $("#inputUsername").val(),//取出文本中的值
-            "gender": $("#inputGender").val(),
-            "age": $("#inputAge").val(),
-            "hobby": $("#inputHobby").val(),
-            "hometown": $("#inputHometown").val(),
-            "describe": $("#inputDescribe").val()
+            "username": inputUsername,//取出文本中的值
+            "gender": inputGender,
+            "age": inputAge,
+            "hobby": inputHobby,
+            "hometown": inputHometown,
+            "describe": inputDescribe
         };
         $.ajax({
             url: "/user/updateInfo",
@@ -494,6 +575,7 @@
             contentType: 'application/json',
             success: function (res) {  //请求成功的回调
                 if (res.code === 200) {
+                    alert("你已退出群聊");
                     displayRoomList();
                 } else {
                     alert(res.message)
@@ -664,7 +746,7 @@
                         roomName + '(' + roomId + ')' + '</li>'
                 }
                 document.getElementById("roomListBoard").innerHTML = listBoard;
-                roomlength = content.data.size;
+                roomlength = content.data.size + 1;
                 displayFriends();
             }
         }
@@ -691,16 +773,16 @@
         }
     }
 
-    function displayUserList() {
+    function displayUserList(roomId) {
         var req = new XMLHttpRequest();
         //设置请求方法 主机地址，是否异步
-        req.open("get", "room/displayUserList/" + rooms[tag], true);
+        req.open("get", "room/displayUserList/" + roomId, true);
         req.send();
         req.onreadystatechange = function () {
             //console.log(req.readyState + " " + req.status);
             if (req.readyState == 4 && req.status == 200) {
-                if (tag === 0) {
-                    document.getElementById("userListBoard").innerHTML = users[tag];
+                if (roomId === "大厅") {
+                    document.getElementById("userListBoard").innerHTML = userListMap.get(roomId);
                 } else {
                     var userListBoard = '<h4 style="margin-top: 2rem">房间成员列表</h4>';
                     userListBoard += '<ul class="list-group" id="userList" style="margin-top: 1rem">';
@@ -708,12 +790,12 @@
                     for (var i = 0; i < content.size; i++) {
                         var username = content.userList[i].username;
                         var userId = content.userList[i].userId;
-                        userListBoard += '<li class="list-group-item list-group-item-action" onclick="showUserInfo(this.innerHTML)">' +
+                        userListBoard += '<li class="list-group-item list-group-item-action" onclick="showUserInfo(this.innerHTML,0)">' +
                             username + '(' + userId + ')' + '</li>'
                     }
                     userListBoard += '</ul>';
-                    users[tag] = userListBoard;
-                    document.getElementById("userListBoard").innerHTML = users[tag];
+                    userListMap.set(roomId,userListBoard);
+                    document.getElementById("userListBoard").innerHTML = userListBoard;
                 }
             }
         }

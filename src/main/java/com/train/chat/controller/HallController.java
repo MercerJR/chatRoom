@@ -3,6 +3,7 @@ package com.train.chat.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.train.chat.configuration.HttpSessionConfigurator;
+import com.train.chat.data.HttpInfo;
 import com.train.chat.data.InputMessage;
 import com.train.chat.pojo.User;
 import com.train.chat.service.RoomService;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +45,8 @@ public class HallController {
 
     private static Map<String,Session> sessions = new ConcurrentHashMap<>();
 
+    private static Map<String,List<String>> addRooms = new ConcurrentHashMap<>();
+
     private Session session;
 
     private static RoomService roomService;
@@ -61,6 +65,12 @@ public class HallController {
         }else {
             rooms.get(roomId).put(session,user);
         }
+        if (!addRooms.containsKey(user.getUserId())){
+            List<String> roomIdList = new ArrayList<>();
+            roomIdList.add(roomId);
+            addRooms.put(user.getUserId(),roomIdList);
+        }
+        addRooms.get(user.getUserId()).add(roomId);
     }
 
     static void exitRoom(String roomId, User user) {
@@ -68,16 +78,26 @@ public class HallController {
         rooms.get(roomId).remove(session);
     }
 
+    static void cancellation(User user){
+        Session session = sessions.get(user.getUserId());
+        try {
+            session.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) throws IOException {
         HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
-        User user = (User) httpSession.getAttribute("user");
+        User user = (User) httpSession.getAttribute(HttpInfo.USER_SESSION);
         this.session = session;
         if (sessions.containsKey(user.getUserId())) {
             Session thatSession = sessions.get(user.getUserId());
             thatSession.close();
             users.remove(thatSession);
             sessions.put(user.getUserId(),session);
+            subOnlineNum();
         }
         users.put(session, user);
         sessions.put(user.getUserId(),session);
@@ -126,9 +146,13 @@ public class HallController {
         User user = users.get(session);
         users.remove(session);
         sessions.remove(user.getUserId());
+        for (String roomId : addRooms.get(user.getUserId())){
+            rooms.get(roomId).remove(session);
+        }
+        addRooms.remove(user.getUserId());
         subOnlineNum();
         if (onlineNum > 0) {
-//            broadCast(InputMessage.leaveInfo(username, onlineNum));
+            broadCast(InputMessage.leaveInfo(user.getUsername(), onlineNum));
             showList();
         }
     }
