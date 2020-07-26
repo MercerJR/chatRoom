@@ -1,5 +1,6 @@
 package com.train.chat.controller;
 
+import com.train.chat.data.HttpInfo;
 import com.train.chat.data.Response;
 import com.train.chat.data.RoomListResponse;
 import com.train.chat.data.UserListResponse;
@@ -33,14 +34,14 @@ public class RoomController {
 
     @PostMapping(value = "/enterRoom", produces = "application/json")
     public Response enterRoom(@RequestBody Room room, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         HallController.putRooms(room.getRoomId(), user);
         return new Response().success();
     }
 
     @PostMapping(value = "/createRoom", produces = "application/json")
     public Response joinRoom(@RequestBody String roomName, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         String roomId = "R" + idUtil.getPrimaryKey();
         service.createRoom(user, roomId, roomName);
         HallController.putRooms(roomId, user);
@@ -55,14 +56,14 @@ public class RoomController {
 
     @PostMapping(value = "/joinExistRoom",produces = "application/json")
     public Response joinExistRoom(@RequestBody Room room,HttpSession session){
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         service.joinExistRoom(user,room);
         return new Response().success();
     }
 
     @PostMapping(value = "/exitRoom",produces = "application/json")
     public Response exitRoom(@RequestBody String roomId,HttpSession session){
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         service.exitRoom(user,roomId);
         HallController.exitRoom(roomId,user);
         return new Response().success();
@@ -70,7 +71,7 @@ public class RoomController {
 
     @GetMapping(value = "/displayRoomList",produces = "application/json")
     public Response displayRoomList(HttpSession session){
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         List<Room> roomList = service.displayRoomList(user.getUserId());
         return new Response().success(new RoomListResponse(roomList));
     }
@@ -79,5 +80,12 @@ public class RoomController {
     public Response displayUserList(@PathVariable("roomId") String roomId){
         List<User> userList = service.displayUserList(roomId);
         return new Response().success(new UserListResponse(userList));
+    }
+
+    @PutMapping(value = "subMessageTag",produces = "application/json")
+    public Response subMessageTag(HttpSession session,@RequestBody String roomId){
+        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
+        service.subMessageTag(user.getUserId(),roomId);
+        return new Response().success();
     }
 }

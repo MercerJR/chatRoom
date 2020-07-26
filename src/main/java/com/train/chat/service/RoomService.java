@@ -3,6 +3,9 @@ package com.train.chat.service;
 import com.train.chat.dao.RoomMapper;
 import com.train.chat.dao.UserAndRoomMapper;
 import com.train.chat.data.HttpInfo;
+import com.train.chat.data.Message;
+import com.train.chat.exception.CustomException;
+import com.train.chat.exception.CustomExceptionType;
 import com.train.chat.pojo.Room;
 import com.train.chat.pojo.User;
 import com.train.chat.pojo.UserAndRoom;
@@ -97,5 +100,17 @@ public class RoomService {
 
     public List<String> selectRoomIdByUser(String userId) {
         return mapper.selectRoomIdByUser(userId);
+    }
+
+    public void addAllMessageTag(String roomId) {
+        if (!mapper.updateAllMessageTagToOne(roomId)){
+            throw new CustomException(CustomExceptionType.SYSTEM_ERROR, Message.CONTACT_ADMIN);
+        }
+    }
+
+    public void subMessageTag(String userId,String roomId){
+        if (!mapper.updateMessageTagToZero(userId,roomId)){
+            throw new CustomException(CustomExceptionType.SYSTEM_ERROR, Message.CONTACT_ADMIN);
+        }
     }
 }

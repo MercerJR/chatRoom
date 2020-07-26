@@ -6,6 +6,7 @@ import com.train.chat.configuration.HttpSessionConfigurator;
 import com.train.chat.data.HttpInfo;
 import com.train.chat.data.InputMessage;
 import com.train.chat.pojo.User;
+import com.train.chat.service.ChatMessageService;
 import com.train.chat.service.RoomService;
 import com.train.chat.utils.MessageDecoder;
 import com.train.chat.utils.MessageEncoder;
@@ -13,9 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,32 +48,39 @@ public class HallController {
 
     private static Map<Session, User> users = new ConcurrentHashMap<>();
 
-    private static Map<String,Session> sessions = new ConcurrentHashMap<>();
+    private static Map<String, Session> sessions = new ConcurrentHashMap<>();
 
-    private static Map<String,List<String>> addRooms = new ConcurrentHashMap<>();
+    private static Map<String, List<String>> addRooms = new ConcurrentHashMap<>();
 
     private Session session;
 
     private static RoomService roomService;
+
+    private static ChatMessageService messageService;
 
     @Autowired
     public void setRoomService(RoomService service) {
         HallController.roomService = service;
     }
 
-    static void putRooms(String roomId, User user){
+    @Autowired
+    public void setMessageService(ChatMessageService service) {
+        HallController.messageService = service;
+    }
+
+    static void putRooms(String roomId, User user) {
         Session session = sessions.get(user.getUserId());
         ConcurrentHashMap<Session, User> sessionMap = new ConcurrentHashMap<>();
-        sessionMap.put(session,user);
-        if (!rooms.containsKey(roomId)){
-            rooms.put(roomId,sessionMap);
-        }else {
-            rooms.get(roomId).put(session,user);
+        sessionMap.put(session, user);
+        if (!rooms.containsKey(roomId)) {
+            rooms.put(roomId, sessionMap);
+        } else {
+            rooms.get(roomId).put(session, user);
         }
-        if (!addRooms.containsKey(user.getUserId())){
+        if (!addRooms.containsKey(user.getUserId())) {
             List<String> roomIdList = new ArrayList<>();
             roomIdList.add(roomId);
-            addRooms.put(user.getUserId(),roomIdList);
+            addRooms.put(user.getUserId(), roomIdList);
         }
         addRooms.get(user.getUserId()).add(roomId);
     }
@@ -78,7 +90,7 @@ public class HallController {
         rooms.get(roomId).remove(session);
     }
 
-    static void cancellation(User user){
+    static void cancellation(User user) {
         Session session = sessions.get(user.getUserId());
         try {
             session.close();
@@ -96,18 +108,18 @@ public class HallController {
             Session thatSession = sessions.get(user.getUserId());
             thatSession.close();
             users.remove(thatSession);
-            sessions.put(user.getUserId(),session);
+            sessions.put(user.getUserId(), session);
             subOnlineNum();
         }
         users.put(session, user);
-        sessions.put(user.getUserId(),session);
+        sessions.put(user.getUserId(), session);
         addOnlineNum();
         broadCast(InputMessage.enterInfo(user.getUsername(), onlineNum));
         showList();
-        synchronized (this){
+        synchronized (this) {
             List<String> roomIdList = roomService.selectRoomIdByUser(user.getUserId());
-            for (String roomId : roomIdList){
-                putRooms(roomId,user);
+            for (String roomId : roomIdList) {
+                putRooms(roomId, user);
             }
         }
     }
@@ -118,19 +130,19 @@ public class HallController {
         ObjectMapper objectMapper = new ObjectMapper();
         InputMessage inputMessage = null;
         try {
-            inputMessage = objectMapper.readValue(msg,InputMessage.class);
+            inputMessage = objectMapper.readValue(msg, InputMessage.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         String username = users.get(session).getUsername();
         assert inputMessage != null;
-        if ("大厅".equals(inputMessage.getTarget())){
+        if ("大厅".equals(inputMessage.getTarget())) {
             broadCast(InputMessage.publishMsg(username, inputMessage));
-        }else {
+        } else {
             if (inputMessage.getTarget().contains("R")) {
                 sendToTarget(InputMessage.publishMsg(username, inputMessage));
-            }else {
-                sendToUser(InputMessage.publishMsg(username,inputMessage));
+            } else {
+                sendToUser(InputMessage.publishMsg(username, inputMessage));
             }
         }
     }
@@ -146,7 +158,7 @@ public class HallController {
         User user = users.get(session);
         users.remove(session);
         sessions.remove(user.getUserId());
-        for (String roomId : addRooms.get(user.getUserId())){
+        for (String roomId : addRooms.get(user.getUserId())) {
             rooms.get(roomId).remove(session);
         }
         addRooms.remove(user.getUserId());
@@ -169,8 +181,12 @@ public class HallController {
         }
     }
 
-    private void sendToTarget(InputMessage inputMessage){
-        for (Session session : rooms.get(inputMessage.getTarget()).keySet()){
+    private void sendToTarget(InputMessage inputMessage) {
+        String fromId = users.get(session).getUserId();
+        messageService.insertGroupMessage(inputMessage.getTarget(), fromId,
+                inputMessage.getMessage(), inputMessage.getTime());
+        roomService.addAllMessageTag(inputMessage.getTarget());
+        for (Session session : rooms.get(inputMessage.getTarget()).keySet()) {
             try {
                 session.getBasicRemote().sendObject(inputMessage);
             } catch (IOException e) {
@@ -181,20 +197,13 @@ public class HallController {
         }
     }
 
-    private void sendToUser(InputMessage inputMessage){
+    private void sendToUser(InputMessage inputMessage) {
         Session session = sessions.get(inputMessage.getTarget());
         String fromUser = users.get(this.session).getUserId();
         String targetUser = inputMessage.getTarget();
-        if (session == null){
-            InputMessage msg = InputMessage.userOffLine(targetUser);
-            try {
-                this.session.getBasicRemote().sendObject(msg);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
-            }
-        }else {
+        messageService.insertFriendMessage(targetUser, fromUser,
+                inputMessage.getMessage(), inputMessage.getTime());
+        if (session != null) {
             try {
                 this.session.getBasicRemote().sendObject(inputMessage);
                 inputMessage.setTarget(fromUser);
@@ -204,7 +213,19 @@ public class HallController {
             } catch (EncodeException e) {
                 e.printStackTrace();
             }
+        }else {
+            try {
+                this.session.getBasicRemote().sendObject(inputMessage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EncodeException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    private void sendImg(InputMessage inputMessage) {
+
     }
 
     private void sendAll(String msg) {

@@ -2,10 +2,9 @@ package com.train.chat.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.train.chat.pojo.User;
+import com.train.chat.utils.DateFormatUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.Set;
 
 /**
  * @Author MercerJR
@@ -21,16 +20,18 @@ public class InputMessage {
     private User[] list;
 
     /**
-     * 0是普通信息，1是在线列表信息
+     * 0是普通信息，1是在线列表信息，2是文件信息
      */
     private Integer type = 0;
 
     private Integer listNum = 0;
 
     /**
-     * 信息指定发送的房间
+     * 信息指定发送的房间或用户
      */
     private String target;
+
+    private Long time;
 
     public InputMessage(String message){
         this.message = message;
@@ -64,14 +65,12 @@ public class InputMessage {
         return new InputMessage(message,userId);
     }
 
-    public static InputMessage publishMsg(String username,String msg,String target){
-        String message = username + ":\n" + msg;
-        return new InputMessage(message,target);
-    }
-
     public static InputMessage publishMsg(String username,InputMessage inputMessage){
-        String message = username + ":\n" + inputMessage.getMessage();
+        Long time = System.currentTimeMillis();
+        String date = DateFormatUtil.getDateByMiles(time);
+        String message = date + "  " + username + ":\n" + inputMessage.getMessage();
         inputMessage.setMessage(message);
+        inputMessage.setTime(time);
         return inputMessage;
     }
 }

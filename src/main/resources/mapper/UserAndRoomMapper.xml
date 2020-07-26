@@ -6,11 +6,14 @@
         <!--@Table user_and_room-->
         <result column="user_id" jdbcType="VARCHAR" property="userId"/>
         <result column="room_id" jdbcType="VARCHAR" property="roomId"/>
+        <result column="message_tag" jdbcType="INTEGER" property="messageTag"/>
     </resultMap>
     <insert id="insert" parameterType="com.train.chat.pojo.UserAndRoom">
         <!--@mbg.generated-->
-        insert into user_and_room (user_id, room_id)
-        values (#{userId,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR})
+        insert into user_and_room (user_id, room_id, message_tag
+        )
+        values (#{userId,jdbcType=VARCHAR}, #{roomId,jdbcType=VARCHAR}, #{messageTag,jdbcType=INTEGER}
+        )
     </insert>
     <insert id="insertSelective" parameterType="com.train.chat.pojo.UserAndRoom">
         <!--@mbg.generated-->
@@ -22,6 +25,9 @@
             <if test="roomId != null">
                 room_id,
             </if>
+            <if test="messageTag != null">
+                message_tag,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="userId != null">
@@ -30,13 +36,16 @@
             <if test="roomId != null">
                 #{roomId,jdbcType=VARCHAR},
             </if>
+            <if test="messageTag != null">
+                #{messageTag,jdbcType=INTEGER},
+            </if>
         </trim>
     </insert>
 
     <select id="selectUserByRoom" resultType="com.train.chat.pojo.User">
         select * from user where user_id in (
-          select user_id from user_and_room
-          where room_id = #{roomId}
+        select user_id from user_and_room
+        where room_id = #{roomId}
         )
     </select>
 
@@ -54,5 +63,15 @@
         delete from user_and_room
         where user_id = #{userId} and room_id = #{roomId}
     </delete>
+
+    <update id="updateAllMessageTagToOne">
+        update user_and_room set message_tag = 1
+        where room_id = #{roomId};
+    </update>
+
+    <update id="updateMessageTagToZero">
+        update user_and_room set message_tag = 0
+        where user_id = #{userId} and room_id = #{roomId}
+    </update>
 
 </mapper>
