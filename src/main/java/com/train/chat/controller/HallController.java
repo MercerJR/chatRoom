@@ -134,13 +134,20 @@ public class HallController {
         }
         String username = users.get(session).getUsername();
         assert inputMessage != null;
-        if (HttpInfo.HALL.equals(inputMessage.getTarget())) {
-            broadCast(InputMessage.publishMsg(username, inputMessage));
-        } else {
-            if (inputMessage.getTarget().contains("R")) {
-                sendToTarget(InputMessage.publishMsg(username, inputMessage));
+        if (inputMessage.getType().equals(InputMessage.infoUpdateList)){
+            updateListInfo(inputMessage);
+        }else {
+            if (inputMessage.getType().equals(InputMessage.commonMessage)){
+                InputMessage.publishMsg(username, inputMessage);
+            }
+            if (HttpInfo.HALL.equals(inputMessage.getTarget())) {
+                broadCast(inputMessage);
             } else {
-                sendToUser(InputMessage.publishMsg(username, inputMessage));
+                if (inputMessage.getTarget().contains("R")) {
+                    sendToTarget(inputMessage);
+                } else {
+                    sendToUser(inputMessage);
+                }
             }
         }
     }
@@ -180,16 +187,19 @@ public class HallController {
 
     private void sendToTarget(InputMessage inputMessage) {
         String fromId = users.get(session).getUserId();
-        messageService.insertGroupMessage(inputMessage.getTarget(), fromId,
-                inputMessage.getMessage(), inputMessage.getTime());
-        roomService.addAllMessageTag(inputMessage.getTarget());
-        for (Session session : rooms.get(inputMessage.getTarget()).keySet()) {
-            try {
-                session.getBasicRemote().sendObject(inputMessage);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (EncodeException e) {
-                e.printStackTrace();
+        String roomId = inputMessage.getTarget();
+        if (rooms.get(roomId) != null){
+            messageService.insertGroupMessage(inputMessage.getTarget(), fromId,
+                    inputMessage.getMessage(), inputMessage.getTime());
+            roomService.addAllMessageTag(inputMessage.getTarget());
+            for (Session session : rooms.get(roomId).keySet()) {
+                try {
+                    session.getBasicRemote().sendObject(inputMessage);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (EncodeException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -219,6 +229,24 @@ public class HallController {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void updateListInfo(InputMessage inputMessage){
+        if (rooms.get(inputMessage.getTarget()) != null){
+            for (Session session : rooms.get(inputMessage.getTarget()).keySet()){
+                try {
+                    session.getBasicRemote().sendObject(inputMessage);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (EncodeException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void sendImageMessage(){
+
     }
 
     private void showList() {

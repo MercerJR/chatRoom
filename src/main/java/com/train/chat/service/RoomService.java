@@ -13,6 +13,7 @@ import com.train.chat.pojo.UserAndRoom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import java.util.List;
  * @Data 2020/7/16 20:50
  */
 @Service
+@Transactional(rollbackFor = RuntimeException.class)
 public class RoomService {
 
     @Autowired

@@ -20,7 +20,7 @@ public class InputMessage {
     private User[] list;
 
     /**
-     * 0是普通信息，1是在线列表信息，2是文件信息
+     * 0是普通信息，1是在线列表信息，2是文件信息，3是更新房间列表
      */
     private Integer type = 0;
 
@@ -32,6 +32,14 @@ public class InputMessage {
     private String target;
 
     private Long time;
+
+    public static Integer commonMessage = 0;
+
+    public static Integer onlineList = 1;
+
+    public static Integer imageMessage = 2;
+
+    public static Integer infoUpdateList = 3;
 
     public InputMessage(String message){
         this.message = message;

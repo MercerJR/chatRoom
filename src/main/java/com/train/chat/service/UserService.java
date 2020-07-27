@@ -10,6 +10,7 @@ import com.train.chat.pojo.User;
 import com.train.chat.pojo.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
  * @Data 2020/7/15 9:36
  */
 @Service
+@Transactional(rollbackFor = RuntimeException.class)
 public class UserService {
 
     @Autowired
@@ -36,10 +38,6 @@ public class UserService {
 
     public User login(String username, String password) {
         return mapper.selectByNameAndPass(username,password);
-    }
-
-    public User getUserById(String userId) {
-        return mapper.selectByPrimaryKey(userId);
     }
 
     public List<User> selectUserByInfo(String userInfo) {

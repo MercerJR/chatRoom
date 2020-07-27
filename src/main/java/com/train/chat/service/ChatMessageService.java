@@ -7,6 +7,7 @@ import com.train.chat.exception.CustomExceptionType;
 import com.train.chat.pojo.ChatMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * @Data 2020/7/26 10:17
  */
 @Service
+@Transactional(rollbackFor = RuntimeException.class)
 public class ChatMessageService {
 
     @Autowired

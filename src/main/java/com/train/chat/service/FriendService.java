@@ -14,6 +14,7 @@ import com.train.chat.utils.IdUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import java.util.List;
  * @Data 2020/7/20 14:34
  */
 @Service
+@Transactional(rollbackFor = RuntimeException.class)
 public class FriendService {
 
     @Autowired
@@ -46,7 +48,8 @@ public class FriendService {
             String username = userMapper.selectUsernameById(userId);
             String newMessage = username + "(" + userId+ ")" + Message.ADD_FRIEND;
             if (!mapper.insert(friend) ||
-                    !messageMapper.insert(new ApplyMessage(msgId,friendId,userId,newMessage,0))){
+                    !messageMapper.insert(new ApplyMessage(msgId,friendId,userId,
+                            newMessage,0,System.currentTimeMillis()))){
                 throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
             }
         }else{
@@ -60,7 +63,8 @@ public class FriendService {
         String friendId = applyMessage.getApplyId();
         String msgId = "M" + idUtil.getPrimaryKey();
         String newMessage = username + "(" + userId+ ")" + Message.AGREE_MESSAGE;
-        ApplyMessage agreeMessage = new ApplyMessage(msgId,applyMessage.getApplyId(),userId,newMessage,1);
+        ApplyMessage agreeMessage = new ApplyMessage(msgId,applyMessage.getApplyId(),
+                userId,newMessage,1,System.currentTimeMillis());
         Friend friend = new Friend(userId,applyMessage.getApplyId(),2);
         if (!mapper.updateTag(applyMessage.getApplyId(),userId)
                 || !mapper.insert(friend)
@@ -79,7 +83,8 @@ public class FriendService {
         String msgId = "M" + idUtil.getPrimaryKey();
         String username = userMapper.selectUsernameById(userId);
         String newMessage = username + "(" + userId+ ")" + Message.REFUSE_MESSAGE;
-        ApplyMessage agreeMessage = new ApplyMessage(msgId,applyMessage.getApplyId(),userId,newMessage,1);
+        ApplyMessage agreeMessage = new ApplyMessage(msgId,applyMessage.getApplyId(),
+                userId,newMessage,1,System.currentTimeMillis());
         if (!mapper.deleteTag(applyMessage.getApplyId(),userId)
                 || !messageMapper.deleteByPrimaryKey(applyMessage.getMsgId())
                 || !messageMapper.insert(agreeMessage)){

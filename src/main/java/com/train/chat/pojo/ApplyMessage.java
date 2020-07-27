@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/21 18:30
+ * @Data 2020/7/27 16:19
  */
 @Data
 @AllArgsConstructor
@@ -22,6 +22,8 @@ public class ApplyMessage implements Serializable {
     private String message;
 
     private Integer type;
+
+    private Long time;
 
     private static final long serialVersionUID = 1L;
 }

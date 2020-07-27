@@ -53,10 +53,8 @@
             <div class="list-group" id="friendListBoard">
 
             </div>
-
         </div>
         <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12" id="center">
-
             <div class="input-group mb-3" style="margin-bottom: 2rem;margin-top: 2rem;">
                 <input type="text" id="createRoom" class="form-control" placeholder="输入您要创建的群聊名称"
                        aria-label="Recipient's username" aria-describedby="basic-addon2">
@@ -89,7 +87,7 @@
             <button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="exitRoom(currentRoomId)"
                     id="out">退出群聊
             </button>
-<!--            <div id="dissolveRoom"></div>-->
+            <!--            <div id="dissolveRoom"></div>-->
         </div>
 
         <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12" id="userListBoard">
@@ -119,6 +117,7 @@
     var currentSelectUserId;
     var currentUserInfo;
     var currentUserId = document.getElementById("user").innerHTML.split("(")[1].split(")")[0];
+    var currentUsername = document.getElementById("user").innerHTML.split("(")[0];
 
     let chatMsgMap = new Map();
     let userListMap = new Map();
@@ -345,6 +344,12 @@
         }
     }
 
+    function sendEnterRoomInfo(enterMessage, roomId) {
+        var message = {"target": roomId, "message": enterMessage, "type": 0};
+        var json = JSON.stringify(message);
+        webSocket.send(json);
+    }
+
     function closeWS() {
         webSocket.close();
     }
@@ -379,8 +384,6 @@
                     chatMsgMap.set(roomId, chatMessage);
                     if (roomId === currentRoomId) {
                         document.getElementsByClassName("lead")[0].innerHTML = chatMessage;
-                    } else {
-                        //TODO 对应的roomId的标签加红点
                     }
                 } else if (msgObj.type === 1) {
                     var userListBoard = '<h4 style="margin-top: 2rem">在线列表</h4>';
@@ -394,9 +397,11 @@
                     userListBoard += '</ul>';
                     userListMap.set(currentRoomId, userListBoard);
                     document.getElementById("userListBoard").innerHTML = userListBoard;
-                } else {
+                } else if (msgObj.type === 2) {
                     var roomId = msgObj.target;
-                    var newMessage = msgObj.message + "(图片url)";
+                    // var newMessage = msgObj.message + "(图片url)";
+                    var newMessage = currentUsername + ":" + "<br>";
+                    newMessage += '<img style="width: 40%;height: 40%;max-width: 100%;max-height: 100%;" src=' + msgObj.message + '>';
                     var oldMessage = chatMsgMap.get(roomId);
                     if (oldMessage == null) {
                         oldMessage = "";
@@ -406,6 +411,10 @@
                     chatMsgMap.set(roomId, chatMessage);
                     if (roomId === currentRoomId) {
                         document.getElementsByClassName("lead")[0].innerHTML = chatMessage;
+                    }
+                } else {
+                    if (msgObj.target === currentRoomId && rightTag === 0) {
+                        displayUserList(msgObj.target);
                     }
                 }
             };
@@ -469,6 +478,7 @@
     }
 
     function publishFile() {
+        alert("请不要选择过大的图片");
         $("#chooseFile").click();
     }
 
@@ -481,6 +491,7 @@
 
 
     function sendImg() {
+        alert("请等待图片发送");
         var formData = new FormData();
         var image = document.getElementById("chooseFile").files[0]
         formData.append('image', image);
@@ -496,7 +507,6 @@
                     var imageRes = JSON.parse(res.data);
                     if (imageRes.code === 200) {
                         var url = imageRes.data.url.xiaomi;
-                        alert(url);
                         var message = {"target": currentRoomId, "message": url, "type": 2};
                         var json = JSON.stringify(message);
                         webSocket.send(json);
@@ -700,6 +710,11 @@
             success: function (res) {  //请求成功的回调
                 if (res.code === 200) {
                     displayRoomList();
+                    var message = {"target": roomId, "type": 3};
+                    var json = JSON.stringify(message);
+                    webSocket.send(json);
+                    var enterMessage = "(加入了群聊)";
+                    sendEnterRoomInfo(enterMessage, roomId);
                     enterRoom(room);
                 } else {
                     alert(res.message)
@@ -721,6 +736,11 @@
             success: function (res) {  //请求成功的回调
                 if (res.code === 200) {
                     alert("你已退出群聊");
+                    var message = {"target": roomId, "type": 3};
+                    var json = JSON.stringify(message);
+                    webSocket.send(json);
+                    var enterMessage = "(退出了群聊)";
+                    sendEnterRoomInfo(enterMessage, roomId);
                     displayRoomList();
                 } else {
                     alert(res.message)
@@ -789,6 +809,10 @@
             if (req.readyState == 4 && req.status == 200) {
                 var selectList = '<div class="list-group">';
                 var content = JSON.parse(req.responseText).data;
+                if (content.size === 0) {
+                    selectList += '<li class="list-group-item list-group-item-action">' +
+                        '没搜到这个用户哦' + '</li>';
+                }
                 for (var i = 0; i < content.size; i++) {
                     var username = content.userList[i].username;
                     var userId = content.userList[i].userId;
@@ -814,6 +838,10 @@
             if (req.readyState == 4 && req.status == 200) {
                 var selectList = '<div class="list-group">';
                 var content = JSON.parse(req.responseText).data;
+                if (content.size === 0) {
+                    selectList += '<li class="list-group-item list-group-item-action">' +
+                        '没搜到这个房间哦' + '</li>';
+                }
                 for (var i = 0; i < content.size; i++) {
                     var roomName = content.roomList[i].roomName;
                     var roomId = content.roomList[i].roomId;
