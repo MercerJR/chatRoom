@@ -17,9 +17,13 @@ public interface UserAndRoomMapper {
 
     List<String> selectRoomIdByUser(String userId);
 
-    void deleteRecord(@Param("userId") String userId, @Param("roomId") String roomId);
+    boolean deleteRecord(@Param("userId") String userId, @Param("roomId") String roomId);
 
     boolean updateAllMessageTagToOne(String roomId);
 
     boolean updateMessageTagToZero(@Param("userId") String userId, @Param("roomId") String roomId);
+
+    boolean deleteRecordByRoom(String roomId);
+
+    int selectMembersNum(String roomId);
 }

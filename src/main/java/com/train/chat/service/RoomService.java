@@ -1,5 +1,6 @@
 package com.train.chat.service;
 
+import com.train.chat.dao.ChatMessageMapper;
 import com.train.chat.dao.RoomMapper;
 import com.train.chat.dao.UserAndRoomMapper;
 import com.train.chat.data.HttpInfo;
@@ -29,13 +30,17 @@ public class RoomService {
     private RoomMapper roomMapper;
 
     @Autowired
+    private ChatMessageMapper chatMessageMapper;
+
+    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     public void createRoom(User user, String roomId, String roomName) {
         Room room = new Room(roomId,roomName);
         UserAndRoom userAndRoom = new UserAndRoom(user.getUserId(),roomId);
-        roomMapper.insert(room);
-        mapper.insert(userAndRoom);
+        if (!roomMapper.insert(room) || !mapper.insert(userAndRoom)){
+            throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
+        }
         String roomsKey = user.getUserId() + ":" + HttpInfo.REDIS_ROOMS_SUFFIX;
         String membersKey = roomId + ":" + HttpInfo.REDIS_MEMBERS_SUFFIX;
         redisTemplate.opsForList().rightPush(roomsKey,room);
@@ -45,21 +50,37 @@ public class RoomService {
     public void joinExistRoom(User user,Room room){
         if (mapper.selectRecord(user.getUserId(),room.getRoomId()) == null){
             UserAndRoom userAndRoom = new UserAndRoom(user.getUserId(),room.getRoomId());
-            mapper.insert(userAndRoom);
+            if (!mapper.insert(userAndRoom)){
+                throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
+            }
             String roomsKey = user.getUserId() + ":" + HttpInfo.REDIS_ROOMS_SUFFIX;
             String membersKey = room.getRoomId() + ":" + HttpInfo.REDIS_MEMBERS_SUFFIX;
             redisTemplate.opsForList().rightPush(roomsKey,room);
             redisTemplate.opsForList().rightPush(membersKey,user);
+        }else {
+            throw new CustomException(CustomExceptionType.VALIDATE_ERROR,Message.ALREADY_ADD_ROOM);
         }
     }
 
     public void exitRoom(User user,String roomId){
+        if (roomId.equals(HttpInfo.HALL)){
+            throw new CustomException(CustomExceptionType.VALIDATE_ERROR,Message.HALL_CAN_NOT_EXIT);
+        }
         Room room = roomMapper.selectByPrimaryKey(roomId);
-        mapper.deleteRecord(user.getUserId(),roomId);
+        if (!mapper.deleteRecord(user.getUserId(),roomId)){
+            throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
+        }
         String membersKey = roomId + ":" + HttpInfo.REDIS_MEMBERS_SUFFIX;
         String roomsKey = user.getUserId() + ":" + HttpInfo.REDIS_ROOMS_SUFFIX;
         redisTemplate.opsForList().remove(membersKey,0,user);
         redisTemplate.opsForList().remove(roomsKey,0,room);
+        if (mapper.selectMembersNum(roomId) == 0){
+            if (!roomMapper.deleteByPrimaryKey(roomId)){
+                throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
+            }
+            redisTemplate.delete(membersKey);
+            chatMessageMapper.deleteMessageByRoom(roomId);
+        }
     }
 
     public boolean existRoom(String room) {
@@ -111,6 +132,12 @@ public class RoomService {
     public void subMessageTag(String userId,String roomId){
         if (!mapper.updateMessageTagToZero(userId,roomId)){
             throw new CustomException(CustomExceptionType.SYSTEM_ERROR, Message.CONTACT_ADMIN);
+        }
+    }
+
+    public void dissolvedRoom(String roomId) {
+        if (!roomMapper.deleteByPrimaryKey(roomId) || !mapper.deleteRecordByRoom(roomId)){
+            throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
         }
     }
 }

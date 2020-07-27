@@ -12,7 +12,7 @@ public enum CustomExceptionType {
     /**
      * 参数校验错误
      */
-    VALIDATE_ERROR(404,"参数校验错误"),
+    VALIDATE_ERROR(400,"参数校验错误"),
     /**
      * 未知错误
      */

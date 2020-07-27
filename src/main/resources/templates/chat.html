@@ -67,27 +67,29 @@
                 </div>
             </div>
 
-            <div id="container">
-                <div class="jumbotron jumbotron-fluid" id="msgBoard">
-                    <div class="container">
-                        <h1 class="display-4"></h1>
-                        <p class="lead"></p>
-                    </div>
-                </div>
 
-                <div class="input-group mb-3" id="inputMsg">
-                    <input type="text" id="inputMessage" class="form-control" style="margin-top: 1rem"
-                           aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <div class="jumbotron jumbotron-fluid" id="msgBoard">
+                <div class="container">
+                    <h1 class="display-4"></h1>
+                    <p class="lead"></p>
                 </div>
-
-                <button type="button" class="btn btn-warning" style="margin-top: 1rem" onclick="send()" id="pub">发布
-                </button>
-                <button type="button" class="btn btn-info" style="margin-top: 1rem" onclick="publishFile();">发布图片</button>
-                <input type="file" name="file" accept="image/png,image/jpg,image/jpeg" id="chooseFile" onchange="uploadFile();" style="display:none;" />
-                <button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="exitRoom(currentRoomId)"
-                        id="out">退出群聊
-                </button>
             </div>
+
+            <div class="input-group mb-3" id="inputMsg">
+                <input type="text" id="inputMessage" class="form-control" style="margin-top: 1rem"
+                       aria-label="Recipient's username" aria-describedby="basic-addon2">
+            </div>
+
+            <button type="button" class="btn btn-warning" style="margin-top: 1rem" onclick="send()" id="pub">发布
+            </button>
+            <button type="button" class="btn btn-info" style="margin-top: 1rem" onclick="publishFile();">发布图片
+            </button>
+            <input type="file" name="file" accept="image/png,image/jpg,image/jpeg" id="chooseFile"
+                   onchange="uploadFile();" style="display:none;"/>
+            <button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="exitRoom(currentRoomId)"
+                    id="out">退出群聊
+            </button>
+<!--            <div id="dissolveRoom"></div>-->
         </div>
 
         <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12" id="userListBoard">
@@ -107,7 +109,6 @@
 
     var webSocket;
     chatMessage = [];
-    var rooms = [];
     users = [];
     var rightTemp;
     // var tag = 0;
@@ -117,6 +118,7 @@
     rightBoard = [];
     var currentSelectUserId;
     var currentUserInfo;
+    var currentUserId = document.getElementById("user").innerHTML.split("(")[1].split(")")[0];
 
     let chatMsgMap = new Map();
     let userListMap = new Map();
@@ -258,11 +260,13 @@
             document.getElementById("center").innerHTML = centerBoard[0];
             centerTag = 0;
         }
+        // document.getElementById("dissolveRoom").innerHTML = "";
+
         var username = user.split("(")[0];
         var userId = user.split("(")[1].split(")")[0];
 
-        if (firstEnter.get(userId) === true){
-            firstEnter.set(userId,false);
+        if (firstEnter.get(userId) === true) {
+            firstEnter.set(userId, false);
             showFriendHistory(userId);
         }
         if (chatMsgMap.get(userId) == null) {
@@ -297,9 +301,17 @@
             var roomObj = {"roomId": roomId, "roomName": roomName};
             joinRoom(roomObj);
         }
+        currentRoomId = roomId;
+        // if (rooms.get(roomId).roomCreator === currentUserId) {
+        //     var newButton = '<button type="button" class="btn btn-danger" style="margin-top: 1rem" onclick="dissolveRoom(currentRoomId)" id="pub">解散群聊\n' +
+        //         '                </button>';
+        //     document.getElementById("dissolveRoom").innerHTML += newButton;
+        // } else {
+        //     document.getElementById("dissolveRoom").innerHTML = "";
+        // }
 
-        if (firstEnter.get(roomId) === true){
-            firstEnter.set(roomId,false);
+        if (firstEnter.get(roomId) === true) {
+            firstEnter.set(roomId, false);
             showGroupHistory(roomId);
         }
         if (chatMsgMap.get(roomId) == null) {
@@ -308,7 +320,6 @@
             document.getElementsByClassName("lead")[0].innerHTML = chatMsgMap.get(roomId);
         }
         alert("你已进入 " + roomName);
-        currentRoomId = roomId;
         rightTag = 0;
         displayUserList(roomId);
     }
@@ -368,7 +379,7 @@
                     chatMsgMap.set(roomId, chatMessage);
                     if (roomId === currentRoomId) {
                         document.getElementsByClassName("lead")[0].innerHTML = chatMessage;
-                    }else {
+                    } else {
                         //TODO 对应的roomId的标签加红点
                     }
                 } else if (msgObj.type === 1) {
@@ -413,16 +424,16 @@
         }
     }
 
-    function showFriendHistory(fromId){
+    function showFriendHistory(fromId) {
         var req = new XMLHttpRequest();
         //设置请求方法 主机地址，是否异步
-        req.open("get", "/chatMessage/getFriendMessage/" + fromId , true);
+        req.open("get", "/chatMessage/getFriendMessage/" + fromId, true);
         req.send();
         req.onreadystatechange = function () {
             if (req.readyState == 4 && req.status == 200) {
                 var content = JSON.parse(req.responseText).data;
                 var chatMessage = "";
-                for (var i = content.size - 1;i >= 0;i--){
+                for (var i = content.size - 1; i >= 0; i--) {
                     var newMessage = content.chatMessageList[i];
                     chatMessage = chatMessage + newMessage + "<br>";
                     chatMessage.scrollTop = chatMessage.scrollTop + 40;
@@ -435,16 +446,16 @@
         }
     }
 
-    function showGroupHistory(roomId){
+    function showGroupHistory(roomId) {
         var req = new XMLHttpRequest();
         //设置请求方法 主机地址，是否异步
-        req.open("get", "/chatMessage/getGroupMessage/" + roomId , true);
+        req.open("get", "/chatMessage/getGroupMessage/" + roomId, true);
         req.send();
         req.onreadystatechange = function () {
             if (req.readyState == 4 && req.status == 200) {
                 var content = JSON.parse(req.responseText).data;
                 var chatMessage = "";
-                for (var i = content.size - 1;i >= 0;i--){
+                for (var i = content.size - 1; i >= 0; i--) {
                     var newMessage = content.chatMessageList[i];
                     chatMessage = chatMessage + newMessage + "<br>";
                     chatMessage.scrollTop = chatMessage.scrollTop + 40;
@@ -457,12 +468,12 @@
         }
     }
 
-    function publishFile(){
+    function publishFile() {
         $("#chooseFile").click();
     }
 
-    function uploadFile(){
-        if($("#chooseFile").val() === ''){
+    function uploadFile() {
+        if ($("#chooseFile").val() === '') {
             return;
         }
         sendImg();
@@ -479,17 +490,17 @@
             data: formData,
             dataType: "json",//返回值类型 JSON
             contentType: false,
-            processData:false,
+            processData: false,
             success: function (res) {
                 if (res.code === 200) {
                     var imageRes = JSON.parse(res.data);
-                    if (imageRes.code === 200){
+                    if (imageRes.code === 200) {
                         var url = imageRes.data.url.xiaomi;
                         alert(url);
                         var message = {"target": currentRoomId, "message": url, "type": 2};
                         var json = JSON.stringify(message);
                         webSocket.send(json);
-                    }else {
+                    } else {
                         alert(imageRes.msg);
                     }
                 } else {
@@ -500,7 +511,27 @@
                 alert(res.result)
             }
         })
+    }
 
+    function dissolveRoom(roomId) {
+        $.ajax({
+            url: "/room/dissolvedRoom",
+            type: "DELETE",
+            data: roomId,
+            dataType: "json",//返回值类型 JSON
+            contentType: 'application/json',
+            success: function (res) {  //请求成功的回调
+                if (res.code === 200) {
+                    alert("你已解散该房间");
+                    displayRoomList();
+                } else {
+                    alert(res.message)
+                }
+            },
+            error: function (res) { //请求失败的回调
+                alert(res.result)
+            }
+        })
     }
 
     function addFriend() {
@@ -747,6 +778,7 @@
     }
 
     selectUsers = [];
+
     function selectUser(userInfo) {
         var req = new XMLHttpRequest();
         //设置请求方法 主机地址，是否异步
@@ -837,6 +869,7 @@
         };
     }
 
+    let rooms = new Map();
     var roomlength;
 
     function displayRoomList() {
@@ -847,17 +880,16 @@
         req.onreadystatechange = function () {
             //console.log(req.readyState + " " + req.status);
             if (req.readyState == 4 && req.status == 200) {
-                rooms = [];
-                rooms[0] = "大厅";
                 var listBoard = "";
                 listBoard += '<li class="list-group-item list-group-item-action" onclick="enterRoom(this.innerHTML)">' +
                     '大厅' + '</li>';
                 var content = JSON.parse(req.responseText);
                 for (var i = 0; i < content.data.size; i++) {
-                    var roomName = content.data.roomList[i].roomName;
-                    var roomId = content.data.roomList[i].roomId;
-                    firstEnter.set(roomId,true);
-                    rooms[rooms.length] = roomId;
+                    var room = content.data.roomList[i];
+                    var roomName = room.roomName;
+                    var roomId = room.roomId;
+                    firstEnter.set(roomId, true);
+                    rooms.set(roomId, room);
                     listBoard += '<li class="list-group-item list-group-item-action" onclick="enterRoom(this.innerHTML)">' +
                         roomName + '(' + roomId + ')' + '</li>'
                 }
@@ -882,8 +914,8 @@
                     var userId = content.userList[i].userId;
                     board += '<li class="list-group-item list-group-item-action" onclick="chatWithUser(this.innerHTML)">' +
                         username + '(' + userId + ')' + '</li>';
-                    firstEnter.set(userId,true);
-                    rooms[roomlength + i] = userId;
+                    firstEnter.set(userId, true);
+                    // rooms[roomlength + i] = userId;
                     document.getElementById("friendListBoard").innerHTML = board;
                 }
             }

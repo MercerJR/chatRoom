@@ -14,4 +14,6 @@ public interface Message {
     String AGREE_MESSAGE = "已同意添加你为好友";
     String REFUSE_MESSAGE = "拒绝添加你为好友";
     String USERNAME_BE_USED = "用户名已被使用";
+    String HALL_CAN_NOT_EXIT = "大厅不能退出";
+    String ALREADY_ADD_ROOM = "你已加入该房间";
 }

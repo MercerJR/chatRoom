@@ -60,4 +60,9 @@
         where receiveId = #{receiveId}
         order by time desc limit 7
     </select>
+
+    <delete id="deleteMessageByRoom">
+        delete from chat_message
+        where receiveId = #{roomId}
+    </delete>
 </mapper>

@@ -10,4 +10,5 @@ public interface HttpInfo {
     String REDIS_ROOMS_SUFFIX = "rooms";
     String REDIS_FRIENDS_SUFFIX = "friends";
     String REDIS_MEMBERS_SUFFIX = "members";
+    String HALL = "大厅";
 }

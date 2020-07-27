@@ -14,13 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
         decoders = {MessageDecoder.class}, encoders = {MessageEncoder.class})
 public class HallController {
 
-    /**
-     * 当前总的在线人数
-     */
-    private static Integer onlineNum = 0;
     /**
      * 聊天房间以及每个房间里的用户会话信息，线程安全
      */
@@ -88,6 +80,10 @@ public class HallController {
     static void exitRoom(String roomId, User user) {
         Session session = sessions.get(user.getUserId());
         rooms.get(roomId).remove(session);
+        if (rooms.get(roomId).size() == 0) {
+            rooms.remove(roomId);
+        }
+        addRooms.get(user.getUserId()).remove(roomId);
     }
 
     static void cancellation(User user) {
@@ -97,6 +93,10 @@ public class HallController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    static void deleteRoom(String roomId) {
+        rooms.remove(roomId);
     }
 
     @OnOpen
@@ -109,12 +109,10 @@ public class HallController {
             thatSession.close();
             users.remove(thatSession);
             sessions.put(user.getUserId(), session);
-            subOnlineNum();
         }
         users.put(session, user);
         sessions.put(user.getUserId(), session);
-        addOnlineNum();
-        broadCast(InputMessage.enterInfo(user.getUsername(), onlineNum));
+        broadCast(InputMessage.enterInfo(user.getUsername()));
         showList();
         synchronized (this) {
             List<String> roomIdList = roomService.selectRoomIdByUser(user.getUserId());
@@ -136,7 +134,7 @@ public class HallController {
         }
         String username = users.get(session).getUsername();
         assert inputMessage != null;
-        if ("大厅".equals(inputMessage.getTarget())) {
+        if (HttpInfo.HALL.equals(inputMessage.getTarget())) {
             broadCast(InputMessage.publishMsg(username, inputMessage));
         } else {
             if (inputMessage.getTarget().contains("R")) {
@@ -159,14 +157,13 @@ public class HallController {
         users.remove(session);
         sessions.remove(user.getUserId());
         for (String roomId : addRooms.get(user.getUserId())) {
-            rooms.get(roomId).remove(session);
+            if (roomId != null){
+                rooms.get(roomId).remove(session);
+            }
         }
         addRooms.remove(user.getUserId());
-        subOnlineNum();
-        if (onlineNum > 0) {
-            broadCast(InputMessage.leaveInfo(user.getUsername(), onlineNum));
-            showList();
-        }
+        broadCast(InputMessage.leaveInfo(user.getUsername()));
+        showList();
     }
 
     private void broadCast(InputMessage inputMessage) {
@@ -213,26 +210,12 @@ public class HallController {
             } catch (EncodeException e) {
                 e.printStackTrace();
             }
-        }else {
+        } else {
             try {
                 this.session.getBasicRemote().sendObject(inputMessage);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (EncodeException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void sendImg(InputMessage inputMessage) {
-
-    }
-
-    private void sendAll(String msg) {
-        for (Session session : users.keySet()) {
-            try {
-                session.getBasicRemote().sendText(msg);
-            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -254,13 +237,5 @@ public class HallController {
                 e.printStackTrace();
             }
         }
-    }
-
-    private synchronized void addOnlineNum() {
-        onlineNum++;
-    }
-
-    private synchronized void subOnlineNum() {
-        onlineNum--;
     }
 }

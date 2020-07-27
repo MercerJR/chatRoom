@@ -74,4 +74,14 @@
         where user_id = #{userId} and room_id = #{roomId}
     </update>
 
+    <delete id="deleteRecordByRoom">
+        delete from user_and_room
+        where room_id = #{roomId}
+    </delete>
+
+    <select id="selectMembersNum" resultType="int">
+        select count(*) from user_and_room
+        where room_id = #{roomId}
+    </select>
+
 </mapper>

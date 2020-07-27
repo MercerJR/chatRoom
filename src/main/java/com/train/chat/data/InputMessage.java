@@ -50,14 +50,14 @@ public class InputMessage {
         this.listNum = list.length;
     }
 
-    public static InputMessage enterInfo(String username,int onlineNum) {
-        String message = username + "加入了大厅，" + "当前在线" + onlineNum + "人";
-        return new InputMessage(message,"大厅");
+    public static InputMessage enterInfo(String username) {
+        String message = username + "加入了大厅" ;
+        return new InputMessage(message,HttpInfo.HALL);
     }
 
-    public static InputMessage leaveInfo(String username,int onlineNum){
-        String message = username + "离开了大厅，" + "当前在线" + onlineNum + "人";
-        return new InputMessage(message,"大厅");
+    public static InputMessage leaveInfo(String username){
+        String message = username + "离开了大厅" ;
+        return new InputMessage(message,HttpInfo.HALL);
     }
 
     public static InputMessage userOffLine(String userId){
