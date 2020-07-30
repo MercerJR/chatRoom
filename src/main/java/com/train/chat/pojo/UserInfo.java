@@ -18,7 +18,7 @@ public class UserInfo implements Serializable {
 
     private String userId;
 
-    @Size(max = 15,message = "用户名不能输入超过15个字符")
+    @Size(min = 4,max = 15,message = "用户名的长度应在4到15个字符以内")
     private String username;
 
     @Size(max = 2,message = "性别建议输入男或女，不要输入过多其他字符")
