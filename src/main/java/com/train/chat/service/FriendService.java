@@ -36,9 +36,6 @@ public class FriendService {
     private UserMapper userMapper;
 
     @Autowired
-    private ChatMessageMapper chatMessageMapper;
-
-    @Autowired
     private RabbitProducer rabbitProducer;
 
     @Autowired

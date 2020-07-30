@@ -197,7 +197,7 @@ public class HallController {
         if (rooms.get(roomId) != null && addRooms.get(fromId).contains(roomId)){
             messageService.insertGroupMessage(inputMessage.getTarget(), fromId,
                     inputMessage.getMessage(), inputMessage.getTime());
-            roomService.addAllMessageTag(inputMessage.getTarget());
+//            roomService.addAllMessageTag(inputMessage.getTarget());
             for (Session session : rooms.get(roomId).keySet()) {
                 try {
                     session.getBasicRemote().sendObject(inputMessage);

@@ -11,7 +11,7 @@
     <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.css" rel="stylesheet">
     <style>
         body {
-            background: rgba(31, 146, 172, 0.36) url("/login_bg.jpg");
+            background: rgba(31, 146, 172, 0.36) url("/static/images/login_bg.jpg");
             font-weight: 400;
             font-size: 1em;
             line-height: 1;
@@ -375,7 +375,7 @@
     function initWebSocket() {
         if ("WebSocket" in window) {
             if (webSocket == null) {
-                var url = "ws://localhost:8082/hall";
+                var url = "ws://116.62.13.6:8082/hall";
                 // 打开一个 web socket
                 webSocket = new WebSocket(url);
             } else {

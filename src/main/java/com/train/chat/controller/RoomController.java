@@ -83,10 +83,10 @@ public class RoomController {
         return new Response().success(new UserListResponse(userList));
     }
 
-    @PutMapping(value = "/subMessageTag",produces = "application/json")
-    public Response subMessageTag(HttpSession session,@RequestBody String roomId){
-        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
-        service.subMessageTag(user.getUserId(),roomId);
-        return new Response().success();
-    }
+//    @PutMapping(value = "/subMessageTag",produces = "application/json")
+//    public Response subMessageTag(HttpSession session,@RequestBody String roomId){
+//        User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
+//        service.subMessageTag(user.getUserId(),roomId);
+//        return new Response().success();
+//    }
 }

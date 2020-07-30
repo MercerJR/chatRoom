@@ -52,13 +52,13 @@
     <select id="selectFriendMessage" resultType="java.lang.String">
         select message from chat_message
         where receiveId = #{receiveId} and fromId = #{fromId}
-        order by time desc limit 7
+        order by time desc limit 30
     </select>
 
     <select id="selectGroupMessage" resultType="java.lang.String">
         select message from chat_message
         where receiveId = #{receiveId}
-        order by time desc limit 7
+        order by time desc limit 30
     </select>
 
     <delete id="deleteMessageByRoom">
