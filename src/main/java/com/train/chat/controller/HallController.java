@@ -73,8 +73,9 @@ public class HallController {
             List<String> roomIdList = new ArrayList<>();
             roomIdList.add(roomId);
             addRooms.put(user.getUserId(), roomIdList);
+        }else {
+            addRooms.get(user.getUserId()).add(roomId);
         }
-        addRooms.get(user.getUserId()).add(roomId);
     }
 
     static void exitRoom(String roomId, User user) {
@@ -95,8 +96,9 @@ public class HallController {
         }
     }
 
-    static void deleteRoom(String roomId) {
-        rooms.remove(roomId);
+    static void updateUsername(String userId,String newUsername){
+        Session session = sessions.get(userId);
+        users.get(session).setUsername(newUsername);
     }
 
     @OnOpen
@@ -139,6 +141,10 @@ public class HallController {
         }else {
             if (inputMessage.getType().equals(InputMessage.commonMessage)){
                 InputMessage.publishMsg(username, inputMessage);
+            }else if (inputMessage.getType().equals(InputMessage.imageMessage)){
+                InputMessage.publishImage(username,inputMessage);
+            }else {
+                InputMessage.publishInfo(inputMessage);
             }
             if (HttpInfo.HALL.equals(inputMessage.getTarget())) {
                 broadCast(inputMessage);
@@ -188,7 +194,7 @@ public class HallController {
     private void sendToTarget(InputMessage inputMessage) {
         String fromId = users.get(session).getUserId();
         String roomId = inputMessage.getTarget();
-        if (rooms.get(roomId) != null){
+        if (rooms.get(roomId) != null && addRooms.get(fromId).contains(roomId)){
             messageService.insertGroupMessage(inputMessage.getTarget(), fromId,
                     inputMessage.getMessage(), inputMessage.getTime());
             roomService.addAllMessageTag(inputMessage.getTarget());
@@ -232,10 +238,26 @@ public class HallController {
     }
 
     private void updateListInfo(InputMessage inputMessage){
-        if (rooms.get(inputMessage.getTarget()) != null){
-            for (Session session : rooms.get(inputMessage.getTarget()).keySet()){
+        if (inputMessage.getTarget().contains("R")){
+            String roomId = inputMessage.getTarget();
+            if (rooms.get(roomId) != null){
+                inputMessage.setMessage(HttpInfo.UPDATE_USER_LIST);
+                for (Session session : rooms.get(roomId).keySet()){
+                    try {
+                        session.getBasicRemote().sendObject(inputMessage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (EncodeException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }else {
+            String userId = inputMessage.getTarget();
+            if (sessions.containsKey(userId)){
+                inputMessage.setMessage(HttpInfo.UPDATE_FRIEND_LIST);
                 try {
-                    session.getBasicRemote().sendObject(inputMessage);
+                    sessions.get(userId).getBasicRemote().sendObject(inputMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (EncodeException e) {
@@ -243,10 +265,6 @@ public class HallController {
                 }
             }
         }
-    }
-
-    private void sendImageMessage(){
-
     }
 
     private void showList() {

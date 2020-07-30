@@ -1,13 +1,11 @@
 package com.train.chat.controller;
 
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -22,12 +20,12 @@ public class ThymeleafServer {
     }
 
     @GetMapping("/index")
-    public ModelAndView index(String username, String password, HttpServletRequest request) throws UnknownHostException {
-        if (StringUtils.isEmpty(username)) {
-            username = "匿名用户";
+    public ModelAndView index(String user, String password, HttpServletRequest request) throws UnknownHostException {
+        if (StringUtils.isEmpty(user)) {
+            user = "匿名用户";
         }
         ModelAndView mav = new ModelAndView("chat");
-        mav.addObject("user", username);
+        mav.addObject("user", user);
 //        mav.addObject("webSocketUrl", "ws://" + InetAddress.getLocalHost().getHostAddress() + ":" + request.getServerPort() + request.getContextPath() + "/hall");
         return mav;
     }

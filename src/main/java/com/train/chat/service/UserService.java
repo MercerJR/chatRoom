@@ -44,22 +44,26 @@ public class UserService {
         return mapper.selectUserByInfo(userInfo);
     }
 
-    public void updateUserInfo(UserInfo userInfo, String oldName,HttpSession session){
+    public String updateUserInfo(UserInfo userInfo, String oldName,HttpSession session){
+        String returnUsername = null;
         if (userInfo.getUsername() != null){
-            User user = mapper.selectByUsername(userInfo.getUsername());
+            String newUsername = userInfo.getUsername();
+            User user = mapper.selectByUsername(newUsername);
             if (user != null && !user.getUsername().equals(oldName)){
                 throw new CustomException(CustomExceptionType.VALIDATE_ERROR,Message.USERNAME_BE_USED);
             }
-            if (!mapper.updateUsernameById(userInfo.getUsername(),userInfo.getUserId())){
+            if (!mapper.updateUsernameById(newUsername,userInfo.getUserId())){
                 throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
             }
             User sessionUser = (User) session.getAttribute(HttpInfo.USER_SESSION);
-            sessionUser.setUsername(userInfo.getUsername());
+            sessionUser.setUsername(newUsername);
             session.setAttribute(HttpInfo.USER_SESSION,sessionUser);
+            returnUsername = newUsername;
         }
         if (!infoMapper.updateByPrimaryKeySelective(userInfo)){
             throw new CustomException(CustomExceptionType.SYSTEM_ERROR,Message.CONTACT_ADMIN);
         }
+        return returnUsername;
     }
 
     public UserInfo displayUserInfo(String userId) {

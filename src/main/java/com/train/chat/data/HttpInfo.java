@@ -8,7 +8,8 @@ public interface HttpInfo {
     String USER_SESSION = "user";
     String INDEX_URL = "/index";
     String REDIS_ROOMS_SUFFIX = "rooms";
-    String REDIS_FRIENDS_SUFFIX = "friends";
     String REDIS_MEMBERS_SUFFIX = "members";
     String HALL = "大厅";
+    String UPDATE_USER_LIST = "userList";
+    String UPDATE_FRIEND_LIST = "friendList";
 }

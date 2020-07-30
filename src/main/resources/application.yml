@@ -43,6 +43,12 @@ spring:
       max-request-size: 10MB
       enabled: true
 
+  rabbitmq:
+    host: 116.62.13.6
+    port: 5672
+    username: mercerjr
+    password: Justmyself957!
+
 #  mvc:
 #    view:
 #      prefix: classpath:/templates/

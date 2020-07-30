@@ -33,13 +33,15 @@ public class InputMessage {
 
     private Long time;
 
-    public static Integer commonMessage = 0;
+    public static int commonMessage = 0;
 
     public static Integer onlineList = 1;
 
     public static Integer imageMessage = 2;
 
     public static Integer infoUpdateList = 3;
+
+    public static Integer infoMessage = 4;
 
     public InputMessage(String message){
         this.message = message;
@@ -73,12 +75,27 @@ public class InputMessage {
         return new InputMessage(message,userId);
     }
 
-    public static InputMessage publishMsg(String username,InputMessage inputMessage){
+    public static void publishMsg(String username, InputMessage inputMessage){
         Long time = System.currentTimeMillis();
         String date = DateFormatUtil.getDateByMiles(time);
         String message = date + "  " + username + ":\n" + inputMessage.getMessage();
         inputMessage.setMessage(message);
         inputMessage.setTime(time);
-        return inputMessage;
+    }
+
+    public static void publishImage(String username,InputMessage inputMessage) {
+        Long time = System.currentTimeMillis();
+        String date = DateFormatUtil.getDateByMiles(time);
+        String message = date + "  " + username + ":" + inputMessage.getMessage();
+        inputMessage.setMessage(message);
+        inputMessage.setTime(time);
+    }
+
+    public static void publishInfo(InputMessage inputMessage) {
+        Long time = System.currentTimeMillis();
+        String date = DateFormatUtil.getDateByMiles(time);
+        String message = date + "  " + inputMessage.getMessage();
+        inputMessage.setMessage(message);
+        inputMessage.setTime(time);
     }
 }

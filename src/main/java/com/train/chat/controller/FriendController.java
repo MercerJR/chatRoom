@@ -48,6 +48,13 @@ public class FriendController {
         return new Response().success();
     }
 
+    @DeleteMapping(value = "deleteFriend",produces = "application/json")
+    public Response deleteFriend(@RequestBody String friendId, HttpSession session){
+        User user = (User) session.getAttribute("user");
+        service.deleteFriend(user.getUserId(),friendId);
+        return new Response().success();
+    }
+
     @GetMapping(value = "/displayMessage",produces = "application/json")
     public Response displayMessage(HttpSession session){
         User user = (User) session.getAttribute("user");
@@ -59,5 +66,4 @@ public class FriendController {
         User user = (User) session.getAttribute("user");
         return new Response().success(new UserListResponse(service.displayFriends(user.getUserId())));
     }
-
 }

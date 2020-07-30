@@ -45,7 +45,7 @@ public class RoomController {
         String roomId = "R" + idUtil.getPrimaryKey();
         service.createRoom(user, roomId, roomName);
         HallController.putRooms(roomId, user);
-        return new Response().success();
+        return new Response().success(roomId);
     }
 
     @GetMapping(value = "/selectRoom/{roomInfo}",produces = "application/json")
@@ -58,6 +58,7 @@ public class RoomController {
     public Response joinExistRoom(@RequestBody Room room,HttpSession session){
         User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         service.joinExistRoom(user,room);
+        HallController.putRooms(room.getRoomId(),user);
         return new Response().success();
     }
 
@@ -86,13 +87,6 @@ public class RoomController {
     public Response subMessageTag(HttpSession session,@RequestBody String roomId){
         User user = (User) session.getAttribute(HttpInfo.USER_SESSION);
         service.subMessageTag(user.getUserId(),roomId);
-        return new Response().success();
-    }
-
-    @DeleteMapping(value = "/dissolvedRoom",produces = "application/json")
-    public Response dissolvedRoom(@RequestBody String roomId){
-        service.dissolvedRoom(roomId);
-        HallController.deleteRoom(roomId);
         return new Response().success();
     }
 }

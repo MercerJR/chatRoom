@@ -15,11 +15,13 @@ public interface FriendMapper {
 
     boolean insertSelective(Friend record);
 
-    Friend isFriend(@Param("user1") String userId, @Param("user2") String friendId);
+    Friend selectFriendRecord(@Param("user1") String userId, @Param("user2") String friendId);
 
     boolean updateTag(@Param("user1")String applyId, @Param("user2")String userId);
 
     boolean deleteTag(@Param("user1")String applyId, @Param("user2")String userId);
 
     List<User> selectFriendsByUser(String userId);
+
+    boolean deleteRecord(@Param("user1") String userId, @Param("user2") String friendId);
 }

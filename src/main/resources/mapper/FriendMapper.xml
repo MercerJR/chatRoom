@@ -42,7 +42,7 @@
         </trim>
     </insert>
 
-    <select id="isFriend" resultMap="BaseResultMap">
+    <select id="selectFriendRecord" resultMap="BaseResultMap">
         select * from friend
         where user1 = #{user1} and user2 = #{user2}
         limit 1
@@ -63,4 +63,10 @@
         where u.user_id = f.user2
         and f.user1 = #{userId}
     </select>
+
+    <delete id="deleteRecord">
+        delete from friend
+        where user1 = #{user1} and user2 = #{user2}
+    </delete>
+
 </mapper>

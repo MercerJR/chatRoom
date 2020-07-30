@@ -16,4 +16,5 @@ public interface Message {
     String USERNAME_BE_USED = "用户名已被使用";
     String HALL_CAN_NOT_EXIT = "大厅不能退出";
     String ALREADY_ADD_ROOM = "你已加入该房间";
+    String ALREADY_APPLY = "你已发送过好友申请，请等待对方回复";
 }

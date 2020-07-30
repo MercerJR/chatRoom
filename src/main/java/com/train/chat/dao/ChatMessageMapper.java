@@ -16,4 +16,8 @@ public interface ChatMessageMapper {
     List<String> selectGroupMessage(String receiveId);
 
     void deleteMessageByRoom(String roomId);
+
+    boolean deleteMessageByFriends(@Param("receiveId") String receiveId, @Param("fromId") String fromId);
+
+    ChatMessage getFriendMessage(@Param("receiveId") String receiveId, @Param("fromId") String fromId);
 }

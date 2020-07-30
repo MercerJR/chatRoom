@@ -164,7 +164,7 @@
             success: function (res) {  //请求成功的回调
                 if (res.code == 200) {
                     // window.location.href = '/index?username='+$('#username').val();   //请求成功之后跳转的页面
-                    window.location.href = '/index?username='+$('#username').val()+'('+res.data+')';
+                    window.location.href = '/index?user='+$('#username').val()+'('+res.data+')';
                     //getWebSocket( $("#username").val());
                 } else {
                     alert(res.message)
@@ -172,7 +172,7 @@
             },
             error: function (res) { //请求失败的回调
                 alert(res.result)
-            },
+            }
         })
     }
 

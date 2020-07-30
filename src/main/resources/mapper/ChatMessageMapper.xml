@@ -65,4 +65,14 @@
         delete from chat_message
         where receiveId = #{roomId}
     </delete>
+
+    <delete id="deleteMessageByFriends">
+        delete from chat_message
+        where receiveId = #{receiveId} and fromId = #{fromId}
+    </delete>
+    <select id="getFriendMessage" resultMap="BaseResultMap">
+        select * from chat_message
+        where receiveId = #{receiveId} and fromId = #{fromId}
+        limit 1
+    </select>
 </mapper>

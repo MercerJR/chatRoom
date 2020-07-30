@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
         if(!CollectionUtils.isEmpty(constraintViolations)){
             StringBuilder msgBuilder = new StringBuilder();
             for(ConstraintViolation constraintViolation :constraintViolations){
-                msgBuilder.append(constraintViolation.getMessage()).append(",");
+                msgBuilder.append(constraintViolation.getMessage()).append("\n");
             }
             String errorMessage = msgBuilder.toString();
             if(errorMessage.length()>1){
@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
         if(!CollectionUtils.isEmpty(objectErrors)) {
             StringBuilder msgBuilder = new StringBuilder();
             for (ObjectError objectError : objectErrors) {
-                msgBuilder.append(objectError.getDefaultMessage()).append(",");
+                msgBuilder.append(objectError.getDefaultMessage()).append("\n");
             }
             String errorMessage = msgBuilder.toString();
             if (errorMessage.length() > 1) {
