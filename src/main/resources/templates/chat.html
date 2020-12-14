@@ -375,7 +375,7 @@
     function initWebSocket() {
         if ("WebSocket" in window) {
             if (webSocket == null) {
-                var url = "ws://116.62.13.6:8082/hall";
+                var url = "ws://localhost:8082/hall";
                 // 打开一个 web socket
                 webSocket = new WebSocket(url);
             } else {
