@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/30 9:53
+ * @Data 2021/4/30 9:53
  */
 @Component
 @RabbitListener(queues = "deleteFriendMessage")

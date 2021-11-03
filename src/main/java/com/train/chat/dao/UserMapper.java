@@ -4,7 +4,7 @@ import com.train.chat.pojo.User;import org.apache.ibatis.annotations.Param;impor
 
 /**
  * @Author MercerJR
- * @Data 2020/7/20 15:44
+ * @Data 2021/4/20 15:44
  */
 public interface UserMapper {
     boolean deleteByPrimaryKey(String userId);

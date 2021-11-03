@@ -4,7 +4,7 @@ import com.train.chat.pojo.ApplyMessage;import java.util.List;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/27 16:19
+ * @Data 2021/4/27 16:19
  */
 public interface ApplyMessageMapper {
     boolean deleteByPrimaryKey(String msgId);

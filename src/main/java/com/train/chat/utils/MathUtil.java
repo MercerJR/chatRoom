@@ -2,7 +2,7 @@ package com.train.chat.utils;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/15 9:50
+ * @Data 2021/4/15 9:50
  */
 public class MathUtil {
 

@@ -2,7 +2,7 @@ package com.train.chat.data;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/23 9:51
+ * @Data 2021/4/23 9:51
  */
 public interface HttpInfo {
     String USER_SESSION = "user";

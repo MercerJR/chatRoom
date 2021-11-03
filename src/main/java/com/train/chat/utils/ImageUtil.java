@@ -22,7 +22,7 @@ import java.io.IOException;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/25 15:01
+ * @Data 2021/4/25 15:01
  */
 @Component
 public class ImageUtil {

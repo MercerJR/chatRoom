@@ -8,7 +8,7 @@ import javax.websocket.EndpointConfig;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/16 11:01
+ * @Data 2021/4/16 11:01
  */
 public class MessageEncoder implements javax.websocket.Encoder.Text<InputMessage> {
     @Override

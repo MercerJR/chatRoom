@@ -2,7 +2,7 @@ package com.train.chat.data;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/15 9:34
+ * @Data 2021/4/15 9:34
  */
 public interface Message {
 

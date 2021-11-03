@@ -5,7 +5,7 @@ import lombok.Data;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/28 15:16
+ * @Data 2021/4/28 15:16
  */
 @Data
 public class UserInfoResponse {

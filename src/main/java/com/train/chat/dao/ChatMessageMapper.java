@@ -4,7 +4,7 @@ import com.train.chat.pojo.ChatMessage;import org.apache.ibatis.annotations.Para
 
 /**
  * @Author MercerJR
- * @Data 2020/7/26 12:23
+ * @Data 2021/4/26 12:23
  */
 public interface ChatMessageMapper {
     boolean insert(ChatMessage record);

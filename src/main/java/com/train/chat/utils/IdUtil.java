@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/15 9:51
+ * @Data 2021/4/15 9:51
  */
 @Component
 public class IdUtil {

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/30 9:47
+ * @Data 2021/4/30 9:47
  */
 @Component
 public class RabbitProducer {

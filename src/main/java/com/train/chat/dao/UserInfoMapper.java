@@ -4,7 +4,7 @@ import com.train.chat.pojo.UserInfo;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/20 17:03
+ * @Data 2021/4/20 17:03
  */
 public interface UserInfoMapper {
     boolean deleteByPrimaryKey(String userId);

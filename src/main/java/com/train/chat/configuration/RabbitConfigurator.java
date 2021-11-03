@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/29 12:39
+ * @Data 2021/4/29 12:39
  */
 @Configuration
 public class RabbitConfigurator {

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/30 10:23
+ * @Data 2021/4/30 10:23
  */
 @Component
 @RabbitListener(queues = "deleteRoomMessage")

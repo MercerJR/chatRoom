@@ -8,7 +8,7 @@ import javax.websocket.server.ServerEndpointConfig.Configurator;
 
 /**
  * @Author MercerJR
- * @Data 2020/7/16 9:09
+ * @Data 2021/4/16 9:09
  */
 public class HttpSessionConfigurator extends Configurator {
 
